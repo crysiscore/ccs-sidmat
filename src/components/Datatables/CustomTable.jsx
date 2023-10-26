@@ -231,11 +231,11 @@ export const MaterialLogisticaTable = ({colunas, dados}) => {
   
   
       } else {
-        NotificationManager.error('Erro ao actualizar a Material','Error', 3000);
+        NotificationManager.error('Erro ao actualizar o Material','Error', 3000);
       }
     } catch (error) {
       // show the error
-      NotificationManager.error('Erro ao actualizar a Material' +error.message,'Error', 4000);
+      NotificationManager.error('Erro ao actualizar o Material' +error.message,'Error', 4000);
       handleClose();
     }
   
