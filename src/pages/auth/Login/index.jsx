@@ -26,6 +26,7 @@ const LoginIndex = () =>{
      const hashedPassword = md5(password);
 
       const response = await login(username, hashedPassword);
+      console.log(response);
       if(response.length > 0){
 
        setIsAuthenticated(true);
@@ -33,7 +34,7 @@ const LoginIndex = () =>{
         sessionStorage.setItem("userData", JSON.stringify(response));
         sessionStorage.setItem("isAuthenticated", true);
         // onLogin(true);   
-
+      
         window.location.href = '/'; // Redirect to the profile route
 
         } else {
