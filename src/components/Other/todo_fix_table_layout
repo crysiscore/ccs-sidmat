@@ -1,0 +1,65 @@
+const [listAreas, setListAreas] = useState(null);
+  const [listArmazens, setListArmazens] = useState(null);
+  const [listprojectos, setProjectos] = useState(null);
+  const [hasFinishedLoading, setHasFinishedLoading] = useState(false);
+ 
+   getAllProjectos()
+  .then(data => {
+    setProjectos(data);
+    setHasFinishedLoading(true);
+  })
+  .catch(error => {
+    // Handle error if needed
+    console.log(error);
+    setHasFinishedLoading(false);
+  });
+
+  getAllAreas()
+  .then(data => {
+    setListAreas(data);
+    setHasFinishedLoading(true);
+  })
+  .catch(error => {
+    // Handle error if needed
+    console.log(error);
+    setHasFinishedLoading(false);
+  });
+ getAllArmazens()
+  .then(data =>  {
+    setListArmazens(data)
+    setHasFinishedLoading(true); })
+  .catch(error => {
+    // Handle error if needed
+    console.log(error);
+    setHasFinishedLoading(false);
+  });
+  
+      // Only execute when listAreas and listArmazens has finished loading
+    if (hasFinishedLoading) {
+
+          //If either one of the lists is empty,  show a popup notification
+    if (!listAreas || !listArmazens || !listprojectos) {
+      NotificationManager.error('Nao foi possivel validar os dados tente novamente... erro ao connectar com o servidor','Error', 14000);
+      return;
+    } else {
+      // 
+       const areas = listAreas.map((area) => area.area);
+       const armazens = listArmazens.map((armazem) => armazem.cod_armazem);
+       const projectos = listprojectos.map((projecto) => projecto.nome);
+       
+       
+       
+        // change  dados  properties values (area, armazem, and projecto) to ids based on the  listAreas, listArmazens and listprojectos
+      const mappedData = dados.map((obj) => {
+        const area = listAreas.find((area) => area.area === obj.area);
+        const armazem = listArmazens.find((armazem) => armazem.cod_armazem === obj.armazem);
+        const projecto = listprojectos.find((projecto) => projecto.projecto === obj.nome);
+        return {
+          ...obj,
+          area: area.id,
+          armazem: armazem.id,
+          projecto: projecto.id,
+        };
+      });
+
+ 
