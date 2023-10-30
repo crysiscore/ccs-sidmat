@@ -1570,9 +1570,9 @@ export const GuiasPorAreaTable = ({colunas, dados}) => {
 // TODO highlight selected row
 export const AreasProgramaticasTable = ({colunas, dados  }) => {
 
-
   const [areaDescricao, setAreaDescricao] = useState('');
   const [areaNome, setAreaNome] = useState(0); 
+  const [areaStatus, setAreaStatus] = useState(0);
 
   const handleAreaDescricaoChange = (event) => {
     setAreaDescricao(event.target.value);
@@ -1581,10 +1581,14 @@ export const AreasProgramaticasTable = ({colunas, dados  }) => {
   const handleAreaNomeChange = (event) => {
     setAreaNome(event.target.value);
   };
+;
+const handleAreaStatusChange = (event) => {
+  setAreaStatus(event.target.value);
+};
 
   const [areaToEdit, setAreaToEdit] = useState(null);
   // create a ref to areaToEdit
-  const areaToEditRef = React.useRef(areaToEdit);
+  //  const areaToEditRef = React.useRef(areaToEdit);
   const [open, setOpen] = React.useState(false);
   const handleClickOpen = () => {
     setOpen(true);
@@ -1618,29 +1622,28 @@ export const AreasProgramaticasTable = ({colunas, dados  }) => {
     } else {
 
      // create an area object with the selected row values
-
+      let areaOject = null;
       rows.map((row) => {
         // Get values from the selected row and create a json object
-        const area = {
+        areaOject = {
           id: row.getValue('id'),
           area: row.getValue('area'),
           descricao: row.getValue('descricao'),
-        };
-        setAreaDescricao(area.descricao);
-        setAreaNome(area.area);
-        setAreaToEdit(area);
+        };      })
+       // setAreaDescricao(areaOject.descricao);
+        setAreaStatus(areaOject.descricao);
+        setAreaNome(areaOject.area);
+        setAreaToEdit(areaOject);
 
         handleClickOpen();
         // set the values of the area-descricao-edit and area-name-edit to the values of the selected row
 
-
-      })
     } ;// end of map
 
   };
  const handleChangeAreaStatus = async (rows) => {
 
-    let area = null;
+
   // Check if multiple rows are selected
   if (rows.length > 1) {
     // Alert the user can only activate one row at a time, use NotificationManager
@@ -1703,12 +1706,12 @@ export const AreasProgramaticasTable = ({colunas, dados  }) => {
 
 const handleSaveEditedArea = async () => {
   // Get the values from the form
-  const areaName = document.getElementById('area-name-edit').value;
-  const areaDescricao = document.getElementById('area-descricao-edit').value;
+  let area = document.getElementById('nome-area-edit').value;
+  let desc = document.getElementById('descricao-txt').value;
 
 
   // Check if the values are empty
-  if (areaName === '' || areaDescricao === '' ) {
+  if (area === '' || desc === '' ) {
     NotificationManager.error('Preencha todos os campos','Error', 4000);
     return;
   }
@@ -1716,8 +1719,8 @@ const handleSaveEditedArea = async () => {
   // Create an area object with the values
   let newArea = {
     id_area: areaToEdit.id,
-    area_name: areaName,
-    area_descricao: areaDescricao,
+    area_name: area,
+    area_descricao: desc,
   };
 
   // Update the area
@@ -1842,14 +1845,14 @@ const handleExportAreas = (rows) => {
     />
 <div>
 
-      <Dialog open={open} onClose={handleClose}>
+      <Dialog  open={open} onClose={handleClose}>
         <DialogTitle> Editar   </DialogTitle>
         <DialogContent>
           <DialogContentText>
           </DialogContentText>
           <TextField
             margin="dense"
-            id="area-name-edit"
+            id="nome-area-edit"
             label="Nome"
             value={areaNome}
             onChange={handleAreaNomeChange}
@@ -1858,12 +1861,13 @@ const handleExportAreas = (rows) => {
           />
           <br>
           </br>
+
           <TextField
-            margin="dense"
-            id="area-descricao-edit"
-            label="Descricao"
-           value={areaDescricao}
-           onchange={handleAreaDescricaoChange}
+            id="descricao-txt"
+            label="Descricao :"
+            value={areaStatus}
+            onChange={handleAreaStatusChange}
+
             sx={{ width: 300 }}
             variant="standard"
           />
@@ -2089,7 +2093,7 @@ export const ProjectosTable = ({colunas, dados  }) => {
 
   const [projectoToEdit, setProjectoToEdit] = useState(null);
   // create a ref to projectoToEdit
-  const projectoToEditRef = React.useRef(projectoToEdit);
+ //  const projectoToEditRef = React.useRef(projectoToEdit);
   const [open, setOpen] = React.useState(false);
   const handleClickOpen = () => {
     setOpen(true);
@@ -2137,7 +2141,6 @@ export const ProjectosTable = ({colunas, dados  }) => {
 
         handleClickOpen();
         // set the values of the projecto-descricao-edit and projecto-name-edit to the values of the selected row
-
 
       })
     } ;// end of map
