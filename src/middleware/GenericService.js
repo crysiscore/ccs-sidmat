@@ -131,7 +131,7 @@ export async function getRequisicoesByMonth(area) {
 // get total requisicoes grouped by distrito getRequisicoesByMonth
 export async function getRequisicoesByDistrito(area) {
   
-  if(area=="all"){
+  if(area==="all"){
     try{
       const response = await api.get('/vw_requisicoes_by_distrito' );
       return  response.data;
