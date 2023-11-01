@@ -119,7 +119,7 @@ function Sidebar(...props) {
 
           {/* Logout Button */}
           <button className="py-2 px-4 border border-emerald-500 bg-emerald-700 w-full rounded text-gray-200 hover:bg-emerald-600 hover:border-emerald-600 justify-end">
-            <FontAwesomeIcon icon={faSignOut}></FontAwesomeIcon> Logout
+            <FontAwesomeIcon icon={faSignOut}></FontAwesomeIcon> Sair
           </button>
         </div>
       </div>

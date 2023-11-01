@@ -732,14 +732,32 @@ alter function api.sp_update_area(bigint, varchar, varchar) owner to sidmat;
 grant execute on function api.sp_update_area(bigint, varchar,varchar) to web_anon;
 -- ----------------------------------------------------------------------------------------------------------------
 -- create a view to select newly inserted material (notification_status ='P") including the area name as well as the colaborador_area information
--- the view must be created with the name vw_novo_material
+-- the view must be created with the name vw_novo_material ;
+
 drop view if exists api.vw_novo_material;
 create or replace view api.vw_novo_material as
 select m.id, m.descricao, m.qtd_stock, a.area, m.data_importacao::date, m.notification_status
     from api.material m inner join api.area a on a.id = m.area
 where  notification_status = 'P';
 grant select on api.vw_novo_material to web_anon;
--- ----------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------
+-- create a view to select newly confirmed guia (status = 4 and notification_status ='P") including the area name as well as user who confirmed delivery
+-- the view must be created with the name vw_confirmacao_guia
+drop view if exists api.vw_confirmacao_guia;
+create or replace view api.vw_confirmacao_guia as
+select gs.id, gs.nr_guia, gs.data_guia::date, s.name as status, gs.previsao_entrega::date, gs.observacao,
+       colab_motorista.nome as motorista, us.nome as unidade_sanitaria, a.area, gs.data_entrega::date, colab_confirmed.nome as confirmed_by
+from api.guia_saida gs
+    inner join api.colaborador colab_motorista on colab_motorista.id = gs.motorista
+    inner join api.unidade_sanitaria us on us.id = gs.unidade_sanitaria
+    inner join api.area a on a.id = gs.area
+    inner join api.status s on s.id = gs.status
+    inner join api.colaborador colab_confirmed  on colab_confirmed.id = gs.confirmedby
+where gs.status = 4 and gs.notification_status = 'P';
+grant select on api.vw_confirmacao_guia to web_anon;
+-------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------
 
 --------------------+ sp_update_material   +-----------------------------------------------------
 -- Create a stored procedure to update the  material

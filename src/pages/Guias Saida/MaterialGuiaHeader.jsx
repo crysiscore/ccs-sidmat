@@ -11,6 +11,7 @@ import React, { useState, useEffect } from 'react';
 import { useRef } from 'react';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
 
+// import {GetGoogleDriveAuthorization} from '../../middleware/GoogleDriveService.js';
 
 let theme = createTheme({
   palette: {
@@ -93,7 +94,17 @@ const MaterialGuiaHeader = ( props) => {
     nrGuiaRef.current = nrGuiaValue;
   }
   , [nrGuiaValue]);
+ const fetchAuthorizationCode = async () => {
+   
+  //const response = await GetGoogleDriveAuthorization();
+  //console.log(response);
+  }
+ 
+  const handleGoogleDriveUpload = () => {
 
+   const  oAuth2Client =    fetchAuthorizationCode();
+
+  };
 
     return(
 
@@ -166,7 +177,8 @@ const MaterialGuiaHeader = ( props) => {
                 <TableCell align="left"> <b>Mercadoria despachada por: </b></TableCell>
                 <TableCell align="center">{"           "}</TableCell>
                 <TableCell align="center"><b> Guia de Entrega #: </b>&nbsp;</TableCell>
-                <TableCell align="left"> {nrGuiaValue} </TableCell>
+                <TableCell align="left"> {nrGuiaValue} </TableCell> 
+                {/* <TableCell align="left"> <button onClick={handleGoogleDriveUpload}>Carregar foto</button></TableCell> */}
               </TableRow>
               <TableRow
                 key={props.user}
