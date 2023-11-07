@@ -2,6 +2,8 @@ import React, { useState ,useEffect } from "react";
 import { MaterialReactTable } from 'material-react-table';
 import { Box, Button } from '@mui/material';
 import FileDownloadIcon from '@mui/icons-material/FileDownload';
+import ArticleIcon from '@mui/icons-material/Article';
+import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import EditIcon from '@mui/icons-material/Edit';
 import { ExportToCsv } from 'export-to-csv'; //or use your library of choice here
 import { NotificationManager } from 'react-notifications';
@@ -21,6 +23,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import TextField from '@mui/material/TextField';
 import SendIcon from '@mui/icons-material/Send';
 import {updateProjectoStatus,updateProjecto} from '../../middleware/GenericService.js';
+import {cancelRequisicao} from '../../middleware/RequisicoesService.js';
 
 // TODO highlight selected row
 export const MaterialDisponivelTable = ({colunas, dados}) => {
@@ -456,7 +459,7 @@ export const ImportarMaterialPreviewTable =({colunas, dados, onUpdateArrayElemen
 
   const  HandleValidateData = () => {
 
-    getAllProjectos()
+    /* getAllProjectos()
     .then(data => {
       setProjectos(data);
       setHasFinishedLoading(true);
@@ -486,7 +489,7 @@ export const ImportarMaterialPreviewTable =({colunas, dados, onUpdateArrayElemen
       console.log(error);
       setHasFinishedLoading(false);
     });
-
+ */
 
     // Only execute when listAreas and listArmazens has finished loading
     if (hasFinishedLoading) {
@@ -783,7 +786,7 @@ export const ImportarMaterialPreviewTable =({colunas, dados, onUpdateArrayElemen
       }
 
 
-      return;
+      return ;
     }
 
 
@@ -902,44 +905,7 @@ const HandleResetTableMaterial = () => {
 
 };
 
-const handleSendMail = (rows) => {
 
-try {
-  //let token = getToken();
-  //const response =sendEmail(token, 'agnaldosamuel@ccsaude.org.mz'); 
-
-  const uploadDir = process.env.REACT_APP_UPLOAD_DIR;
-
-  /* generate worksheet and workbook */
-  const worksheet = utils.json_to_sheet(dados);
-  const workbook = utils.book_new();
-  utils.book_append_sheet(workbook, worksheet, "Materiais");
-
-
-  /* fix headers */
-  utils.sheet_add_aoa(worksheet, [["Cod", "Descricao","Quantidade","Armazem","Familia","Projecto","Area","Prazo"]], { origin: "A1" });
-  /* calculate column width ( number of properties from rows object) */
-  const max_width = Object.keys(dados[0]).reduce((acc, key) => Math.max(acc, key.length), 0);
-    //const max_width = rows.reduce((w, r) => Math.max(w, r.name.length), 10);
-  worksheet["!cols"] = [ { wch: max_width } ];
-  
-  /* create an XLSX file and try to save to  */
-  // get current date 
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = date.getMonth() + 1;
-  const day = date.getDate();
-  const today = year + '-' + month + '-' + day;
-  // concat the file name  and area with the current date
-  const fileName = uploadDir+ "Material disponivel " + today + ".xlsx";
-  writeFile(workbook,fileName, { compression: true });
-
-} catch (error) {
-  NotificationManager.error('Nao foi possivel enviar o email. ' +error,'Error', 4000);
-}
-
-
-}
   return (
     <MaterialReactTable
       columns={visibleColumns}
@@ -978,15 +944,6 @@ try {
           >
             Download
           </Button>
-          <Button
-            disabled={table.getPrePaginationRowModel().rows.length === 0}
-            //export all rows, including from the next page, (still respects filtering and sorting)
-            onClick={() => handleSendMail(table.getPrePaginationRowModel().rows)}
-            startIcon={<SendIcon />}
-            variant="contained"
-          >
-            Send Mail
-          </Button>
           </div>
   
       
@@ -1021,34 +978,7 @@ export const MaterialUnidadeSanitariaTable = ({colunas, dados, onSetRequisicoes}
   };
 
  
- const handleActivate = (rows) => {
-  // Check if multiple rows are selected
-  if (rows.length > 1) {
-    // Alert the user can only activate one row at a time, use NotificationManager
-    NotificationManager.info('Apenas uma linha pode ser selecionada de cada vez','Info', 4000);
 
-  } else {
-    // Activate the row
-
-
-    rows.map((row) => {
-      // Get values from the selected row and create a json object
-      material = {
-        id: row.getValue('id'),
-        id_area: row.getValue('id_area'),
-        descricao: row.getValue('descricao'),
-        qtd_stock: row.getValue('qtd_stock'),
-        armazem: row.getValue('armazem'),
-        cod: row.getValue('cod'),
-        familia: row.getValue('familia'),
-        prazo: row.getValue('prazo'),
-      };
-      
-
-    });
-  }
-
-};
 const handleSaveRow =  ({ exitEditingMode, row, values }) => {
   //if using flat data and simple accessorKeys/ids, you can just do a simple assignment here.
 
@@ -1095,10 +1025,21 @@ const handleSaveRow =  ({ exitEditingMode, row, values }) => {
 
 // TODO highlight selected row
 export const MinhasRequisicoesTable = ({colunas, dados, tipo}) => {
-  const [selectedRowIndex, setSelectedRowIndex] = useState(null);
+  const [selectedRow, setSelectedRow] = useState(null);
+  const [requisicoes, setUpdateRequisicoes] = useState([...dados]);
+
   let requisicao = null;
   const navigate = useNavigate();
   let requisition_type = null;
+
+  const [open, setOpen] = React.useState(false);
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
   //if tipo is null then requisition_type is  an empty string
  
   if(tipo === 'pendentes'){
@@ -1110,6 +1051,12 @@ export const MinhasRequisicoesTable = ({colunas, dados, tipo}) => {
     requisition_type = 'entregues';
   } else{
     requisition_type = '';
+  }
+
+  const  fetchResultCancelRequisicao = async(id_requisicao) => {
+    // Send a POST request
+    const result = await cancelRequisicao(id_requisicao);
+    return result;
   }
 
   const handleExportRows = (rows) => {
@@ -1172,6 +1119,66 @@ export const MinhasRequisicoesTable = ({colunas, dados, tipo}) => {
      writeFile(workbook,fileName, { compression: true });
   }
 
+  const handleVoidRequisicao = async () => {
+
+
+      let id_requisicao = selectedRow[0].id;
+      //  cancell requisicao
+      try {
+        const result =  await fetchResultCancelRequisicao(id_requisicao);
+        if (result[0].canceled==='Yes') {
+          NotificationManager.success('Requisicao cancelada com sucesso','Sucesso', 5000);
+          // update requisicoes array
+          handleClose( );
+          const updatedRequisicoes = dados.filter((requisicao) => requisicao.id !== id_requisicao);
+          setUpdateRequisicoes(updatedRequisicoes);
+        }
+        
+      } catch (error) {
+        NotificationManager.error('Nao foi possivel cancelar a requisicao: ' + error.message,'Error', 5000);
+        
+      }
+
+      return;
+  
+  
+  };
+
+  const handleConfirmVoidRequisicao =(rows) => {
+
+    if (rows.length > 1) {
+      // Alert the user can only activate one row at a time, use NotificationManager
+      NotificationManager.info('Apenas uma linha pode ser selecionada de cada vez','Info', 4000);
+  
+    } else {
+
+      let req = null;
+      // get all properties from rows (dados) and store in an array. each row represent a requisicao.
+      const requisicao = rows.map((row) => {
+       // Get values from the selected row and create a json object
+       req = {
+         id: row.getValue('id'),
+         data_requisicao: row.getValue('data_requisicao'),
+         material_descricao: row.getValue('material_descricao'),
+         quantidade: row.getValue('quantidade'),
+         unidade_sanitaria: row.getValue('unidade_sanitaria'),
+         nr_guia: row.getValue('nr_guia'),
+         pf_nome: row.getValue('pf_nome'),
+         pf_contacto: row.getValue('pf_contacto'),
+         requisitante: row.getValue('requisitante'),
+         notas: row.getValue('notas')
+       };
+       return req;
+     });
+
+    setSelectedRow(requisicao);
+
+    handleClickOpen();
+    
+    }
+
+  }
+
 
 
   const handleVisualizarGuia = (rows) => {
@@ -1223,10 +1230,10 @@ export const MinhasRequisicoesTable = ({colunas, dados, tipo}) => {
 
 
   return (
-
+    <div>
     <MaterialReactTable
       columns={colunas}
-      data={dados}
+      data={requisicoes}
       initialState={{
         columnVisibility: { id: false, requisitante_id: false, id_guia: false, guia_status: false},
          density: 'compact'
@@ -1244,10 +1251,21 @@ export const MinhasRequisicoesTable = ({colunas, dados, tipo}) => {
               disabled={table.getFilteredSelectedRowModel().rows.length === 0}
               onClick={ () => handleVisualizarGuia(table.getSelectedRowModel().rows)}
               variant="contained"
+              startIcon={<ArticleIcon />}
+             
             >
             Ver Guia
             </Button>
             <Button
+            disabled={table.getFilteredSelectedRowModel().rows.length === 0 || requisition_type === 'entregues' || requisition_type=== 'processadas'}
+            //export all rows, including from the next page, (still respects filtering and sorting)
+            onClick={() => handleConfirmVoidRequisicao(table.getSelectedRowModel().rows)}
+            startIcon={<DeleteForeverIcon />}
+            variant="contained"
+          >
+            Anular
+          </Button>
+          <Button
             disabled={table.getPrePaginationRowModel().rows.length === 0}
             //export all rows, including from the next page, (still respects filtering and sorting)
             onClick={() => handleExportRows(table.getPrePaginationRowModel().rows)}
@@ -1256,13 +1274,31 @@ export const MinhasRequisicoesTable = ({colunas, dados, tipo}) => {
           >
             Download
           </Button>
-≈
           </div>
           
   
       
       )}
     />
+    <div>
+
+<Dialog open={open} onClose={handleClose}>
+  <DialogTitle> Confirmar   </DialogTitle>
+  <DialogContent>
+    <DialogContentText>
+      Tem certeza que deseja anular esta requisicao?
+    </DialogContentText>
+  </DialogContent>
+  <DialogActions>
+    <Button onClick={handleClose}>Cancel</Button>
+    <Button onClick={handleVoidRequisicao}>Salvar</Button>
+  </DialogActions>
+</Dialog>
+</div>
+
+</div>
+
+
 
   );
 };
@@ -1638,7 +1674,7 @@ export const AreasProgramaticasTable = ({colunas, dados  }) => {
     } ;// end of map
 
   };
- const handleChangeAreaStatus = async (rows) => {
+  const handleChangeAreaStatus = async (rows) => {
 
     let area = null;
   // Check if multiple rows are selected

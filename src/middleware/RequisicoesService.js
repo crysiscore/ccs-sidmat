@@ -17,16 +17,17 @@ export async function createRequisicao(data) {
     }
     
 }
-// create a funcion to get requisicoes by user
-export async function getRequisicoesByUser(user_id) {
+// create a funcion to get requisicoes by user_id and the canceled staus is No
+export async function getRequisicoesByUser(id) {
     try{
-        const response = await api.get('/vw_my_requisicao?requisitante_id=eq.' + user_id);
+        const response = await api.get('/vw_my_requisicao?requisitante_id=eq.' + id + '&canceled=eq.No');
         return await response.data;
     }catch(error) {
         throw error;
     }
-    
+
 }
+
 
 
 // create a funcion to get requisicoes by area
@@ -48,7 +49,7 @@ export async function getRequisicoesByArea(area) {
 // create a funcion to get all requisicoes 
 export async function getAllRequisicoes() {
     try{
-        const response = await api.get('/vw_requisicoes_pendentes');
+        const response = await api.get('/vw_requisicoes_pendentes?canceled=eq.No');
         return await response.data;
     }catch(error) {
         throw error;
@@ -80,4 +81,14 @@ export async function getRequisicoesPendentesAreaUS(area,us) {
         throw error;
     }
 
+}
+
+// create a function to cancell a requisicao by its id
+export async function cancelRequisicao(id) {
+    try {
+        const response = await api.patch('/requisicao?id=eq.' + id, {"canceled" : 'Yes'}, {headers: {'Prefer': 'return=representation'}});
+        return response.data;
+    } catch(error) {
+        throw error;
+    }
 }

@@ -100,8 +100,8 @@ const UploadForm = () => {
      // TODO Mostrar nome do ficheiro e uma  POPUP Notification
     const reader = new FileReader();
 
-    reader.onload = (e) => {
-      const data = new Uint8Array(e.target.result);
+    reader.onload = (event) => {
+      const data = new Uint8Array(event.target.result);
       // read workbook using xlsx
        const workbook = XLSX.read(data, { type: 'array' });
       const sheetName = workbook.SheetNames[0];
@@ -119,8 +119,10 @@ if (materialData.length >= minimumRow) {
   // check if header range is equal to the number of required columns
     if (headerRange.e.c !== requiredColumns.length ) {
    // Show a popup notification
-    NotificationManager.error("Template de importacao Invalido. Certifique que os dados comecao na 3 linha e contem as seguintes  colunas na ordem  the correct order ['Descricao', 'Cod', 'Quantidade', 'Armazem', 'Familia', 'Prazo', 'Area','Projecto']",'Error', 8000);
+    NotificationManager.error("Template de importacao Invalido. Certifique que a informacao inicia na 3 linha e contem as seguintes  colunas na ordem  the correct order ['Descricao', 'Cod', 'Quantidade', 'Armazem', 'Familia', 'Prazo', 'Area','Projecto']",'Error', 8000);
     setData([]);
+    setSelectedFile(null);
+
 } else {
     
 

@@ -137,7 +137,7 @@ if(!islogged){
   
 
   //Show a spinner while the data is being fetched'
-  if (!materialLogistica) {
+  if (!materialLogistica || !listArmazens ) {
 
   return (
     <>
@@ -156,7 +156,7 @@ if(!islogged){
         {/* <div className="flex flex-row gap-x-4 overflow-hidden overflow-y-auto justify-between "> */}
          <div className=" gap-y-4 overflow-hidden overflow-y-auto center wrapper-requisicoes ">
          <MaterialLogisticaTable colunas = {columnNames}  dados = {[]}  />
-        <ClipLoader color="#36d7b7" />
+         <ClipLoader color="#36d7b7"  size={30}/><span >    Carregando dados...</span> 
         </div>
 
         <div className="lg:w-full w-[1024px] overflow-hidden flex flex-row justify-between text-slate-700 gap-2 lg:max-h-screen overflow-x-auto whitespace-nowrap"></div>
@@ -172,9 +172,6 @@ if(!islogged){
 
  if(materialLogistica.length === 0) {
    NotificationManager.info('Nao ha materiais disponiveis', 'Info', 8000);
-
-
-
 
 
    return (
