@@ -24,6 +24,11 @@ import TextField from '@mui/material/TextField';
 import SendIcon from '@mui/icons-material/Send';
 import {updateProjectoStatus,updateProjecto} from '../../middleware/GenericService.js';
 import {cancelRequisicao} from '../../middleware/RequisicoesService.js';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
+import RestartAltIcon from '@mui/icons-material/RestartAlt';
+import { ImportExport, RestartAlt } from "@mui/icons-material";
+import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined';
+
 
 // TODO highlight selected row
 export const MaterialDisponivelTable = ({colunas, dados}) => {
@@ -425,6 +430,9 @@ export const ImportarMaterialPreviewTable =({colunas, dados, onUpdateArrayElemen
  
   
 
+  useEffect(() => {
+
+
   getAllProjectos()
   .then(data => {
     setProjectos(data);
@@ -435,7 +443,10 @@ export const ImportarMaterialPreviewTable =({colunas, dados, onUpdateArrayElemen
     console.log(error);
     setHasFinishedLoading(false);
   });
+  }
+  ,[]);
 
+  useEffect(() => {
   getAllAreas()
   .then(data => {
     setListAreas(data);
@@ -446,6 +457,10 @@ export const ImportarMaterialPreviewTable =({colunas, dados, onUpdateArrayElemen
     console.log(error);
     setHasFinishedLoading(false);
   });
+  }
+  ,[]);
+
+  useEffect(() => {
   getAllArmazens()
   .then(data =>  {
     setListArmazens(data)
@@ -455,7 +470,9 @@ export const ImportarMaterialPreviewTable =({colunas, dados, onUpdateArrayElemen
     console.log(error);
     setHasFinishedLoading(false);
   });
-
+  }
+  ,[]);
+  
 
   const  HandleValidateData = () => {
 
@@ -924,6 +941,7 @@ const HandleResetTableMaterial = () => {
               disabled={table.getPrePaginationRowModel().rows.length === 0}
               onClick={ HandleValidateData}
               variant="contained"
+              startIcon={<UploadFileOutlinedIcon />}
             >
             Importar Material
             </Button>
@@ -932,6 +950,7 @@ const HandleResetTableMaterial = () => {
               disabled={table.getPrePaginationRowModel().rows.length === 0}
               onClick={ HandleResetTableMaterial}
               variant="contained"
+              startIcon={<RestartAlt />}
             >
             Reset
             </Button>

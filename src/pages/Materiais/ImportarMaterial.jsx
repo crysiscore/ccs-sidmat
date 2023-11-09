@@ -9,6 +9,7 @@ import {ImportarMaterialPreviewTable , RequisicoesPorAreaTable} from "../../comp
 import { NotificationManager} from 'react-notifications';
 import DashboardHeader from "../../components/Other/DashboardHeader.jsx";
 import { Navigate } from 'react-router-dom';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 
 const avatar =
 "https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80";
@@ -83,12 +84,15 @@ const UploadForm = () => {
 
   const handleFileChange = (event) => {
     // Reset the data array
-    setData([]);
-    setSelectedFile(null);
-    
-    setSelectedFile(event.target.files[0]);
+   // if(materialList ){
+      setData([]);
+      setSelectedFile(null);
+    //}
+
+    let file = event.target.files[0];
+    setSelectedFile(file);
     // Check if files is xls or xlsx
-    const fileType = event.target.files[0].type;
+    const fileType = file.type;
     if(fileType !== "application/vnd.ms-excel" && fileType !== "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"){
         setXlsFormatError(xlsFormaError);
         // Todo show a error popup notification indicating that the file format is not supported
@@ -186,7 +190,7 @@ if (materialData.length >= minimumRow) {
   }
 
 } ;
-reader.readAsArrayBuffer(event.target.files[0]);  
+  reader.readAsArrayBuffer(event.target.files[0]);  
  } } 
    
 
@@ -247,6 +251,7 @@ reader.readAsArrayBuffer(event.target.files[0]);
               <img src={uploadImg} alt="upload" />
               <h3>Clique para carregar ficheiro</h3>
               <p>Tamanho máximo do arquivo 10mb</p>
+              {/* <input type="file" onChange={handleFileChange} /> */}
               <input type="file" onChange={handleFileChange} />
               </div>
               <div>
