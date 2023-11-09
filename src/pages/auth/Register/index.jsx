@@ -37,10 +37,10 @@ function RegisterIndex() {
               />
               <div className="md:block hidden text-slate-100">
                 <h1 className="font-semibold text-2xl pb-2">
-                  Register an Account
+                Registrar uma conta
                 </h1>
                 <span className="text-sm">
-                  Free access to EDP Online services
+                Sistema de Monitoramento de distribuição de materiais
                 </span>
               </div>
             </div>

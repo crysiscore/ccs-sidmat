@@ -127,7 +127,7 @@ GRANT EXECUTE ON FUNCTION update_stock() TO web_anon;
 drop view if exists api.vw_my_requisicao;
 create or replace view api.vw_my_requisicao as
 SELECT r.id, r.data_requisicao::date, m.descricao as material, r.quantidade, us.nome as unidade_sanitaria,
-       r.pf_contacto, r.pf_nome, c.nome as requisitante, c.id as requisitante_id, r.nr_guia as id_guia ,gs.nr_guia as nr_guia,s.name as guia_status,  r.notas, a.area
+       r.pf_contacto, r.pf_nome, c.nome as requisitante, c.id as requisitante_id, r.nr_guia as id_guia ,gs.nr_guia as nr_guia,s.name as guia_status,  r.notas, a.area, r.canceled
 FROM api.requisicao r
     inner join api.material m on m.id = r.material
     inner join api.unidade_sanitaria us on us.id = r.unidade_sanitaria
@@ -170,7 +170,7 @@ grant select on api.vw_sumario_requisicoes_pendentes to web_anon;
 drop view if exists api.vw_requisicoes_pendentes;
 create or replace view api.vw_requisicoes_pendentes as
 SELECT   r.id as id_requisicao, r.data_requisicao::date, m.descricao as material_descricao, r.quantidade, a.area , us.id as id_us,
-         us.nome as unidade_sanitaria,pf_nome,pf_contacto,  r.requisitante, c.nome as requisitante_nome, r.notas, p.nome as projecto
+         us.nome as unidade_sanitaria,pf_nome,pf_contacto,  r.requisitante, c.nome as requisitante_nome, r.notas, p.nome as projecto, r.canceled
 FROM api.requisicao r
     inner join api.material m on m.id = r.material
     inner join api.area a on a.id = m.area
@@ -732,14 +732,32 @@ alter function api.sp_update_area(bigint, varchar, varchar) owner to sidmat;
 grant execute on function api.sp_update_area(bigint, varchar,varchar) to web_anon;
 -- ----------------------------------------------------------------------------------------------------------------
 -- create a view to select newly inserted material (notification_status ='P") including the area name as well as the colaborador_area information
--- the view must be created with the name vw_novo_material
+-- the view must be created with the name vw_novo_material ;
+
 drop view if exists api.vw_novo_material;
 create or replace view api.vw_novo_material as
 select m.id, m.descricao, m.qtd_stock, a.area, m.data_importacao::date, m.notification_status
     from api.material m inner join api.area a on a.id = m.area
 where  notification_status = 'P';
 grant select on api.vw_novo_material to web_anon;
--- ----------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------------------------------------------------------
+-- create a view to select newly confirmed guia (status = 4 and notification_status ='P") including the area name as well as user who confirmed delivery
+-- the view must be created with the name vw_confirmacao_guia
+drop view if exists api.vw_confirmacao_guia;
+create or replace view api.vw_confirmacao_guia as
+select gs.id, gs.nr_guia, gs.data_guia::date, s.name as status, gs.previsao_entrega::date, gs.observacao,
+       colab_motorista.nome as motorista, us.nome as unidade_sanitaria, a.area, gs.data_entrega::date, colab_confirmed.nome as confirmed_by
+from api.guia_saida gs
+    inner join api.colaborador colab_motorista on colab_motorista.id = gs.motorista
+    inner join api.unidade_sanitaria us on us.id = gs.unidade_sanitaria
+    inner join api.area a on a.id = gs.area
+    inner join api.status s on s.id = gs.status
+    inner join api.colaborador colab_confirmed  on colab_confirmed.id = gs.confirmedby
+where gs.status = 4 and gs.notification_status = 'P';
+grant select on api.vw_confirmacao_guia to web_anon;
+-------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------
 
 --------------------+ sp_update_material   +-----------------------------------------------------
 -- Create a stored procedure to update the  material
@@ -764,13 +782,34 @@ alter function api.sp_update_material(bigint, varchar, bigint) owner to sidmat;
 grant execute on function api.sp_update_material(bigint, varchar,bigint) to web_anon;
 -- ----------------------------------------------------------------------------------------------------------------
 
-select * from api.distrito
+----------------------------------------------------------------------------------------------------------------------------------------
+-- create the api.fn_update_date_cancelled() function
+drop function if exists api.fn_update_date_cancelled();
+create or replace function api.fn_update_date_cancelled()
+ returns trigger
+ language plpgsql
+ as $$
+begin
+    -- if canceled is ''Yes then update date_cancelled to current date and increment the qtd_stock of the material
+    -- based on the quantidade of the requisicao
+    if new.canceled = 'Yes' then
+        update api.requisicao set date_cancelled = current_date where id = new.id;
+        update api.material set qtd_stock = qtd_stock + new.quantidade where id = new.material;
+    end if;
+    return new;
 
-1,Kamavota
-2,Kamaxakeni
-3,Kampfumu
-4,Kamubukwana
-5,Kanyaka
-6,Katembe
-7,Nlhamankulu
-8,Escolas
+end; $$;
+
+alter function api.fn_update_date_cancelled() owner to sidmat;
+grant execute on function api.fn_update_date_cancelled() to web_anon;
+-------------------------------------------------------------------------------------------------------------------
+-----------------------
+-- create a trigger function to update the date_cancelled  of requisicao to the current date whenever canceled column is set to 'Yes'
+-- the trigger funcition must be called every time canceled column   is updated using the api.fn_update_date_cancelled() function
+drop trigger if exists trg_update_date_cancelled on api.requisicao ;
+create trigger trg_update_date_cancelled
+after update of canceled on api.requisicao
+for each row
+execute procedure api.fn_update_date_cancelled();
+
+-------------------------------------------------------------------------------------------------------------------

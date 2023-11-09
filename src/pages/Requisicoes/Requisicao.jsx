@@ -1258,7 +1258,7 @@ const addSelectedUS = (newObject) => {
 };
 
 const removeSelectedUS = (idToRemove) => {
-  const updatedArray = selected.filter(obj => obj !== idToRemove);
+  let updatedArray = selected.filter(obj => obj !== idToRemove);
   setSelected(updatedArray);
   selectedRef.current = updatedArray;
 };
@@ -1379,9 +1379,10 @@ const handleSetSelected = (usID) => {
    selectedUnidadesSanitarias =tempidArray;
   } else {
   // if idArray is greater than counterRequisicoes, then add new requisicao
+
   let tempSeedArray = selectedRef.current;
   if(tempSeedArray.length > counterRequisicoes){
-
+   
   let idLastValue = tempSeedArray[(tempSeedArray.length -1)]
   let newRequisicao =[];
 
@@ -1400,10 +1401,12 @@ const handleSetSelected = (usID) => {
     requisitante: userInfo[0].id,
     notas: ""
   };
+
   addRequisicao(newObj);
   //increment counterRequisicoes
   setCounterRequisicoes(prevState => prevState + 1);
-  let tempidArray =  selected.map((item) => {
+  
+  let tempidArray =  tempSeedArray.map((item) => {
     return parseInt(item);
   });
   setIdArray(tempidArray);
@@ -1422,7 +1425,6 @@ const handleSetSelected = (usID) => {
       setTotalQuantidadeReq(0);
     } else {
    // which object exists in idARRray but not in value
-   let tempSeedArray = selectedRef.current;
     let idLastValue = idArray.find((item) => { return !tempSeedArray.map(Number).includes(item); });
     
     // This works too

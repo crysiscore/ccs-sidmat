@@ -23,6 +23,7 @@ package-lock.json
 .env.development.local
 .env.test.local
 .env.production.local
+client_secret_apps_google.json
 
 npm-debug.log*
 yarn-debug.log*

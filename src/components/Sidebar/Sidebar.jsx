@@ -67,7 +67,7 @@ function Sidebar({ ...props }) {
         {/* Sidebar wrapper */}
         <div className="md:w-64 border-r-2 border-gray-100 h-full flex-col flex flex-shrink-0">
           {/* Logo */}
-          <SidebarLogo toggle={props.toggle}  icon={ccsIco} text="CCS   Distribuição de Materiais" />
+          <SidebarLogo toggle={props.toggle}  icon={ccsIco} text="Distribuição de Materiais" />
           {/* <SidebarLogo toggle={props.toggle}  icon={faTruckFast} text="Distribuição de Materiais" /> */}
 
           {/* Search Menu */}
@@ -89,7 +89,7 @@ function Sidebar({ ...props }) {
                 className="py-2 px-4 border border-emerald-500 bg-emerald-600 w-full rounded-full text-gray-200 hover:bg-emerald-600 hover:border-emerald-600 justify-end text-sm"
                 onClick={() => logout()}
               >
-                <FontAwesomeIcon icon={faSignOut}></FontAwesomeIcon> Logout
+                <FontAwesomeIcon icon={faSignOut}></FontAwesomeIcon> Sair
               </button>
             </div>
           </div>

@@ -56,9 +56,10 @@ const LoginIndex = () =>{
 
   };
 
-
   const LoginImage =
-    "https://edp.raincode.my.id/static/media/login.cc0578413db10119a7ff.png";
+    "https://i.ibb.co/v3fQ3PX/ccs-logo-white.png";
+  // const LoginImage =
+  //   "https://edp.raincode.my.id/static/media/login.cc0578413db10119a7ff.png";
   return (
     <>
       <div className="flex min-h-screen">
@@ -72,12 +73,15 @@ const LoginIndex = () =>{
                 alt="Logo Login"
                 className="md:w-72 w-48 mx-auto"
               />
+              <br/>
+              <br/>
               <div className="md:block hidden text-slate-100">
                 <h1 className="font-semibold text-2xl pb-2">
-                  Login to Your Account
+                Sistema de Monitoramento de distribuição de materiais
+          
                 </h1>
                 <span className="text-sm">
-                  Free access to EDP Online services
+                Faça login na sua conta
                 </span>
               </div>
             </div>
@@ -87,7 +91,7 @@ const LoginIndex = () =>{
             <div className="loginWrapper flex flex-col w-full lg:px-36 md:px-8 px-8 md:py-8">
               {/* Login Header Text */}
               <div className="hidden md:block font-medium self-center text-xl sm:text-3xl text-gray-800">
-                Welcome Back!
+                Bem Vindo!
               </div>
 
               {/* Sparator */}
@@ -162,7 +166,7 @@ const LoginIndex = () =>{
                         }}
                         className="inline-flex font-semibold text-xs sm:text-sm text-emerald-500 hover:text-emerald-700"
                       >
-                        Lost password?
+                        Perdeu a senha?
                       </Link>
                     </div>
                   </div>
@@ -175,7 +179,7 @@ const LoginIndex = () =>{
                       className="flex items-center justify-center focus:outline-none text-white text-sm bg-emerald-500 hover:bg-emerald-700 rounded-lg md:rounded md:py-2 py-3 w-full transition duration-150 ease-in"
                     >
                       <span className="mr-2 md:uppercase">
-                        {loading ? "Processando...." : "Login"}
+                        {loading ? "Processando...." : "Entrar"}
                       </span>
                     </button>
                   </div>
