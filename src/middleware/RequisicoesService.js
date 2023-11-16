@@ -18,9 +18,14 @@ export async function createRequisicao(data) {
     
 }
 // create a funcion to get requisicoes by user_id and the canceled staus is No
-export async function getRequisicoesByUser(id) {
+export async function getRequisicoesByUser(area) {
     try{
-        const response = await api.get('/vw_my_requisicao?requisitante_id=eq.' + id + '&canceled=eq.No');
+        let tempArea =area;
+        // if tempArea contains special character & replace it with  '%26'
+        if (tempArea.includes('&')) {
+            tempArea = tempArea.replace(/&/g, '%26');
+          } 
+        const response = await api.get('/vw_my_requisicao?area=eq.' + tempArea + '&canceled=eq.No');
         return await response.data;
     }catch(error) {
         throw error;

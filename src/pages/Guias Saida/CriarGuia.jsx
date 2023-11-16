@@ -195,6 +195,11 @@ const handleSalvarGuia = async () => {
     return;
   } else{
 
+     // check if nr_guia is a number
+    if(isNaN(nr_guia)){
+      NotificationManager.error('O numero da guia deve ser um numero', 'Erro!', 5000);
+      return;
+    }
     //cast nr_guia to string
     nr_guia = nr_guia.toString();
   }
@@ -380,7 +385,7 @@ const handleImprimirGuia = () => {}
                     <TableCell align = "right">
                    NR DA GUIA:
                     </TableCell>
-                    <TableCell align = "left">   <TextField id="nr-guia" label="# guia" variant="standard" />	 </TableCell>
+                    <TableCell align = "left">   <TextField    id="nr-guia" label="# guia" variant="standard" />	 </TableCell>
                     <TableCell align = "left"> 
                     <Button variant="contained"onClick={handleSalvarGuia}  disabled={enableSalvar }>Salvar</Button>
                     </TableCell>

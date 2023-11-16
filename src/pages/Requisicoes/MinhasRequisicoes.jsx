@@ -114,7 +114,7 @@ function MinhasRequisicoes() {
 
 //get Material by user
 useEffect(() => {
-    getRequisicoesByUser(user_id) 
+    getRequisicoesByUser(area) 
     .then(requisicoes => { 
       setData(requisicoes);
       setHasFinishedLoading(true);

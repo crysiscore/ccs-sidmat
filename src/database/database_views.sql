@@ -138,6 +138,26 @@ FROM api.requisicao r
     left join api.status s on s.id = gs.status;
 grant select on api.vw_my_requisicao to web_anon;
 select  * from api.vw_my_requisicao;
+-------------------------------------------------------------------------------------------------------------------------------
+-- -----------------------+ vw_my_requisicao  +-----------------------------------
+-- create a view thal will show the requisicao of the user, the result must contain the folowing fields
+-- id, data_requisicao, material, quantidade, unidade_sanitaria, pf_contacto, pf_nome, user as requisitante, notas, nr_guia
+-- the view must be created in the api schema
+-- the view must be created with the name vw_my_requisicao
+drop view if exists api.vw_my_area_requisicao;
+create or replace view api.vw_my_area_requisicao as
+SELECT r.id, r.data_requisicao::date, m.descricao as material, r.quantidade, us.nome as unidade_sanitaria,
+       r.pf_contacto, r.pf_nome, c.nome as requisitante, c.id as requisitante_id, r.nr_guia as id_guia ,gs.nr_guia as nr_guia,s.name as guia_status,  r.notas, a.area, r.canceled
+FROM api.requisicao r
+    inner join api.material m on m.id = r.material
+    inner join api.unidade_sanitaria us on us.id = r.unidade_sanitaria
+    inner join api.colaborador c on c.id = r.requisitante
+    left join api.guia_saida gs on gs.id = r.nr_guia
+    left join api.colaborador_area ca on ca.colaborador = c.id
+    left join api.area a on a.id = ca.area
+    left join api.status s on s.id = gs.status;
+grant select on api.vw_my_area_requisicao to web_anon;
+select  * from api.vw_my_area_requisicao;
 -- -----------------------------------------------------------------------------------------
 -- -----------------------+ vw_requisicao_by_area      +-----------------------------------
 -- create a view thal will show the total of  requisicao of the area, the result must contain the folowing fields
@@ -162,7 +182,7 @@ SELECT a.id, a.area , count(r.id) as total_requisicao, count(distinct r.unidade_
 FROM api.requisicao r
     inner join api.material m on m.id = r.material
     inner join api.area a on a.id = m.area
- where nr_guia is null group by a.id,a.area;
+ where r.canceled='No' and nr_guia is null group by a.id,a.area;
 grant select on api.vw_sumario_requisicoes_pendentes to web_anon;
 -- -----------------------------------------------------------------------------------------
 -- -----------------------+ vw_requisicoes_pendentes  +-----------------------------------
@@ -331,7 +351,7 @@ drop view if exists  api.view_get_requisicoes_by_nr_guia;
 create or replace view  api.view_get_requisicoes_by_nr_guia as
 
     SELECT r.id, r.data_requisicao::date, m.descricao as material_descricao, r.quantidade, us.nome as unidade_sanitaria, 'BOM' as condicao,
-       r.pf_contacto, r.pf_nome, c.nome as requisitante, r.notas, gs.nr_guia as nr_guia, gs.id as id_guia, col.nome as motorista, gs.previsao_entrega::date, s.name as status, gs.observacao, a.area, gs.data_guia::date, gs.data_entrega::date
+       r.pf_contacto, r.pf_nome, c.nome as requisitante, r.notas, gs.nr_guia as nr_guia, gs.id as id_guia, col.nome as motorista, gs.previsao_entrega::date, s.name as status, gs.observacao, a.area, gs.data_guia::date, gs.data_entrega::date as data_entrega
 FROM api.requisicao r
     inner join api.material m on m.id = r.material
     inner join api.unidade_sanitaria us on us.id = r.unidade_sanitaria

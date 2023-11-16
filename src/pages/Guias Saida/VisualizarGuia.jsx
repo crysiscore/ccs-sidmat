@@ -253,7 +253,7 @@ const handleConfirmar = async () =>  {
             {/* Create a div with a fixed width. and render  <MaterialGuia rows={materiaisGuia}/>  */}
             <div className="flexjustify-down items-down h-screen">
             <div className="w-[950px]">
-            <MaterialGuiaHeader  user={userData[0].nome }  nr_guia={nrGuia} data_entrega={requisicoesDaGuia[0].data_entrega}/>
+            <MaterialGuiaHeader  user={userData[0].nome }  nr_guia={nrGuia} data_entrega={requisicoesDaGuia[0].data_entrega? requisicoesDaGuia[0].data_entrega: ""}/>
             <MaterialGuia rows={requisicoesDaGuia}/>
             <MaterialGuiaFooter guiaSaida={requisicoesDaGuia}/>
             
