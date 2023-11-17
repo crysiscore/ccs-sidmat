@@ -18,10 +18,15 @@ const sumarioRequisicoes = props.dataset;
 
 // store sumarioRequisicoes.mes_nome in array use the map function to extract the values
 const mes_nome = sumarioRequisicoes.map(item => item.mes_nome);
-// store sumarioRequisicoes.total_requisicao in array use the map function to extract the values
-const total_requisicao = sumarioRequisicoes.map(item => item.total_requisicao);
+// make mes_nome unique
+const unique_mes_nome = [...new Set(mes_nome)];
 
-  const data = {
+
+const areas_name = sumarioRequisicoes.map(item => item.area);
+// store sumarioRequisicoes.total_requisicao in array use the map function to extract the values
+// const total_requisicao = sumarioRequisicoes.map(item => item.total_requisicao);
+
+/*   const data = {
     labels: mes_nome,
     datasets: [
       {
@@ -29,7 +34,25 @@ const total_requisicao = sumarioRequisicoes.map(item => item.total_requisicao);
         data:total_requisicao,
       }
     ],
-  };
+  }; */
+
+const arrayObjects = sumarioRequisicoes.map(item => {
+  return {
+    label: item.area,
+    // make data = {mes_nome: total_requisicao}
+    data: {[item.mes_nome]: item.total_requisicao}
+
+  }
+} );
+
+let dados = { 
+
+  unique_mes_nome,
+  datasets: arrayObjects,
+};
+
+
+
 /*   const data = {
     labels: ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli"],
     datasets: [
@@ -45,17 +68,31 @@ const total_requisicao = sumarioRequisicoes.map(item => item.total_requisicao);
     ],
   }; */
 
-  const options = {
+   const options = {
     responsive: true,
     maintainAspectRatio: false,
     aspectRatio: 2,
-  };
+  }; 
+
+/*    const options = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' ,
+      },
+      title: {
+        display: true,
+        text: 'Chart.js Bar Chart',
+      },
+    },
+  }; */
+
   return (
     <div className={`widgetCard p-3 md:py-4 md:px-6 ${props.className}`}>
       <h1 className="text-medium font-semibold pb-4">Sumário de Requisições</h1>
       <div className="">
-        <Bar data={data} options={options} />
-      </div>
+        <Bar data={dados} options={options} />
+       </div>
     </div>
   );
 }

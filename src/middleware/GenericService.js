@@ -112,19 +112,36 @@ export async function getRequisicoesByMonth(area) {
   } else {
 
     try{
+      let allAreas = "";
+
+      if(area.length>1 ){
       let tempArea =area;
-      // if tempArea contains special character & replace it with  '%26'
-      if (tempArea.includes('&')) {
-          tempArea = tempArea.replace(/&/g, '%26');
-        } 
-      const response = await api.get('/vw_requisicoes_by_month?area=eq.' + tempArea );
-      return  response.data;
+                tempArea.forEach((area, index) => {
+                  allAreas += `"${area}"`;
+                  if (index !== tempArea.length - 1) {
+                    allAreas += ',';
+                  }
+                });
+
+         allAreas = allAreas.replace(/&/g, '%26');
+         const response = await api.get('/vw_requisicoes_by_month?area=in.(' + allAreas + ')');
+         return  response.data;
+              }
+              else{
+                let allAreas = area;
+                
+                allAreas = allAreas.map(area => area.replace(/&/g, '%26'));
+                const response = await api.get('/vw_requisicoes_by_month?area=in.(' + allAreas + ')');
+                return  response.data;
+              }
+
   } catch(error) {
     throw error;
   }
 
 }
 }
+
 
 
 
@@ -142,15 +159,31 @@ export async function getRequisicoesByDistrito(area) {
 
   } else {
 
-    let tempArea =area;
-    // if tempArea contains special character & replace it with  '%26'
-    if (tempArea.includes('&')) {
-        tempArea = tempArea.replace(/&/g, '%26');
-      } 
-
     try{
-      const response = await api.get('/rpc/fn_requisicoes_por_distrito?area_name=' + tempArea );
-      return  response.data;
+    let allAreas = "";
+    if(area.length>1){
+      let tempArea =area;
+      tempArea.forEach((area, index) => {
+        allAreas += `"${area}"`;
+        if (index !== tempArea.length - 1) {
+          allAreas += ',';
+        }
+      });
+
+      allAreas = allAreas.replace(/&/g, '%26');
+
+        const response = await api.get('/rpc/fn_requisicoes_por_distrito?area_name=%7B' +allAreas+ '%7D'); // %7B = { and %7D = }
+        return  response.data;
+
+    }
+    else{
+      let allAreas = area;
+      allAreas = allAreas.map(area => area.replace(/&/g, '%26'));
+
+        const response = await api.get('/rpc/fn_requisicoes_por_distrito?area_name=%7B' +allAreas+ '%7D'); // %7B = { and %7D = }
+        return  response.data;
+
+    }
   } catch(error) {
     throw error;
   }

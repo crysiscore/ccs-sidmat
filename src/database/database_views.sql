@@ -137,7 +137,7 @@ FROM api.requisicao r
     left join api.area a on a.id = ca.area
     left join api.status s on s.id = gs.status;
 grant select on api.vw_my_requisicao to web_anon;
-select  * from api.vw_my_requisicao;
+select  * from api.vw_my_requisicao where area = 'APSS';
 -------------------------------------------------------------------------------------------------------------------------------
 -- -----------------------+ vw_my_requisicao  +-----------------------------------
 -- create a view thal will show the requisicao of the user, the result must contain the folowing fields
@@ -157,7 +157,7 @@ FROM api.requisicao r
     left join api.area a on a.id = ca.area
     left join api.status s on s.id = gs.status;
 grant select on api.vw_my_area_requisicao to web_anon;
-select  * from api.vw_my_area_requisicao;
+select  * from api.vw_my_area_requisicao where area = 'APSS';
 -- -----------------------------------------------------------------------------------------
 -- -----------------------+ vw_requisicao_by_area      +-----------------------------------
 -- create a view thal will show the total of  requisicao of the area, the result must contain the folowing fields
@@ -373,6 +373,7 @@ FROM api.requisicao r
     inner join api.material m on m.id = r.material
     inner join api.area a on a.id = m.area
 where date_part('year', r.data_requisicao) = date_part('year', current_date)
+and r.canceled = 'No'
 group by a.area, mes , mes_nome
 order by a.area, mes asc;
 grant select on api.vw_requisicoes_by_month to web_anon;
@@ -389,6 +390,7 @@ FROM api.requisicao r
     inner join api.material m on m.id = r.material
    -- inner join api.area a on a.id = m.area
 where date_part('year', r.data_requisicao) = date_part('year', current_date)
+and r.canceled = 'No'
 group by  mes , mes_nome
 order by  mes asc;
 grant select on api.vw_all_requisicoes_by_month to web_anon;
@@ -399,11 +401,11 @@ grant select on api.vw_all_requisicoes_by_month to web_anon;
 -- using the above code as template, create a postgres stored procedure that receives the area as the parameter and returns the total number
 -- of requisicoes by distrito for that area
 drop function if exists  api.fn_requisicoes_por_distrito;
-CREATE OR REPLACE FUNCTION api.fn_requisicoes_por_distrito(area_name varchar)
+CREATE OR REPLACE FUNCTION api.fn_requisicoes_por_distrito(area_name varchar[])
 RETURNS TABLE (distrito varchar, total_novas BIGINT, total_processadas BIGINT,total_completas  BIGINT , color text) AS $$
 BEGIN
     RETURN QUERY
-    select req_novas.distrito, req_novas.total_requisicoes as total_novas,
+ select total_req.distrito, req_novas.total_requisicoes as total_novas,
        req_processadas.total_requisicoes as total_processadas,
        req_completas.total_requisicoes as total_completas , 'cardSuccess' as color from (
 SELECT  d.distrito, count(*) as total_requisicoes
@@ -416,9 +418,20 @@ FROM api.requisicao r
     left join api.colaborador_area ca on ca.colaborador = c.id
     left join api.area a on a.id = ca.area
     left join api.status s on s.id = gs.status
-    where gs.nr_guia is  null and a.area = area_name
-    group by d.distrito ) as req_novas
-
+    where  a.area =any(ARRAY[area_name]) and r.canceled = 'No'
+    group by d.distrito )  as total_req
+left join ( SELECT  d.distrito, count(*) as total_requisicoes
+FROM api.requisicao r
+    inner join api.material m on m.id = r.material
+    inner join api.unidade_sanitaria us on us.id = r.unidade_sanitaria
+    inner join api.colaborador c on c.id = r.requisitante
+    inner join api.distrito d on d.id = us.distrito
+    left join api.guia_saida gs on gs.id = r.nr_guia
+    left join api.colaborador_area ca on ca.colaborador = c.id
+    left join api.area a on a.id = ca.area
+    left join api.status s on s.id = gs.status
+    where gs.nr_guia is  null and a.area =any(ARRAY[area_name]) and r.canceled = 'No'
+    group by d.distrito ) as req_novas on req_novas.distrito = total_req.distrito
 left join (
 SELECT  d.distrito, count(*) as total_requisicoes
 FROM api.requisicao r
@@ -430,8 +443,8 @@ FROM api.requisicao r
     left join api.colaborador_area ca on ca.colaborador = c.id
     left join api.area a on a.id = ca.area
     left join api.status s on s.id = gs.status
-    where gs.nr_guia is not null and s.name ='NOVA' and a.area = area_name
-    group by d.distrito ) as req_processadas on req_processadas.distrito = req_novas.distrito
+    where gs.nr_guia is not null and s.name ='NOVA' and a.area =any(ARRAY[area_name]) and r.canceled = 'No'
+    group by d.distrito ) as req_processadas on req_processadas.distrito = total_req.distrito
 left join (
 SELECT  d.distrito, count(*) as total_requisicoes
 FROM api.requisicao r
@@ -443,12 +456,12 @@ FROM api.requisicao r
     left join api.colaborador_area ca on ca.colaborador = c.id
     left join api.area a on a.id = ca.area
     left join api.status s on s.id = gs.status
-    where gs.nr_guia is not null and s.name ='ENTREGUE' and a.area = area_name
-    group by d.distrito ) as req_completas on req_completas.distrito = req_novas.distrito;
+    where gs.nr_guia is not null and s.name ='ENTREGUE' and a.area =any(ARRAY[area_name]) and r.canceled = 'No'
+    group by d.distrito ) as req_completas on req_completas.distrito = total_req.distrito;
 END;
 $$ LANGUAGE plpgsql;
-grant execute on function api.fn_requisicoes_por_distrito(varchar) to web_anon;
-select * from fn_requisicoes_por_distrito('APSS');
+grant execute on function api.fn_requisicoes_por_distrito(varchar[]) to web_anon;
+select * from fn_requisicoes_por_distrito(ARRAY['APSS']);
 ----------------------------------------------------------------------
 -------------------------+ vw_requisicoes_by_distrito    +-----------------------------------------------------
 -- using the above code as template, create a view hat receives the area as the parameter and returns the total number
@@ -468,7 +481,7 @@ FROM api.requisicao r
     left join api.colaborador_area ca on ca.colaborador = c.id
     left join api.area a on a.id = ca.area
     left join api.status s on s.id = gs.status
-    where gs.nr_guia is  null
+    where gs.nr_guia is  null and r.canceled = 'No'
     group by d.distrito ) as req_novas
 
 left join (
@@ -482,7 +495,7 @@ FROM api.requisicao r
     left join api.colaborador_area ca on ca.colaborador = c.id
     left join api.area a on a.id = ca.area
     left join api.status s on s.id = gs.status
-    where gs.nr_guia is not null and s.name ='NOVA'
+    where gs.nr_guia is not null and s.name ='NOVA' and r.canceled = 'No'
     group by d.distrito ) as req_processadas on req_processadas.distrito = req_novas.distrito
 left join (
 SELECT  d.distrito, count(*) as total_requisicoes
@@ -495,7 +508,7 @@ FROM api.requisicao r
     left join api.colaborador_area ca on ca.colaborador = c.id
     left join api.area a on a.id = ca.area
     left join api.status s on s.id = gs.status
-    where gs.nr_guia is not null and s.name ='ENTREGUE'
+    where gs.nr_guia is not null and s.name ='ENTREGUE' and r.canceled = 'No'
     group by d.distrito ) as req_completas on req_completas.distrito = req_novas.distrito;
 
 grant select on  api.vw_requisicoes_by_distrito to web_anon;

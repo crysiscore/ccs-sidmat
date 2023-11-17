@@ -65,7 +65,7 @@ export async function getAllRequisicoes() {
 // create a funcion to get requisicoes pendentes
 export async function getRequisicoesPendentesArea() {
     try{
-        const response = await api.get('/vw_sumario_requisicoes_pendentes');
+        const response = await api.get('/vw_sumario_requisicoes_pendentes?canceled=eq.No');
         return await response.data;
     }catch(error) {
         throw error;
