@@ -21,7 +21,7 @@ export async function getMaterialDisponivel(area) {
 
     try{
       let allAreas = "";
-      if(area.length>1 ){
+      if(area.length> 1 ){
         let tempArea =area;
                   tempArea.forEach((area, index) => {
                     allAreas += `"${area}"`;
@@ -31,16 +31,16 @@ export async function getMaterialDisponivel(area) {
                   });
   
            allAreas = allAreas.replace(/&/g, '%26');
-           const response = await api.get('/vw_material_disponivel?qtd_stock=gt.0&area=in.(' + allAreas + ')');
+           const response = await api.get('/vw_material_disponivel?area=in.(' + allAreas + ')');
            return  response.data;
                 } else {
 
-                  let tempArea =area;
+                  let tempArea =area[0];
                   // if tempArea contains special character & replace it with  '%26'
                   if (tempArea.includes('&')) {
                       tempArea = tempArea.replace(/&/g, '%26');
                     } 
-                    const response = await api.get('/vw_material_disponivel?qtd_stock=gt.0&area=eq.' + tempArea);
+                    const response = await api.get('/vw_material_disponivel?area=eq.' + tempArea);
                     return await response.data;
 
 

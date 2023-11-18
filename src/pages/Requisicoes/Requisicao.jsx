@@ -1222,7 +1222,7 @@ useEffect(() => {
     });
 
 }, []);
-// Get userInfor from sessionStorage
+// Get ruserInfo from sessionStorage
 const sessionData = sessionStorage.getItem('userData'); // Retrieve data from localStorage
 //parse sessionData to JSON
 let userInfo = [];

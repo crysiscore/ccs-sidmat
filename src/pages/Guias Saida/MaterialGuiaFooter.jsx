@@ -20,7 +20,7 @@ const MaterialGuiaFooter = ({ guiaSaida }) => {
           <TableHead>
             <TableRow>
             <TableCell align="right">           <div>
-           <p><br></br><br></br><br></br></p>
+           <p><br></br><br></br></p>
             </div>  
     </TableCell>
               <TableCell align="right">{"           "}</TableCell>
@@ -54,7 +54,7 @@ const MaterialGuiaFooter = ({ guiaSaida }) => {
               <TableRow  >
         
                 <TableCell align="left">    <div>
-           <p><br></br><br></br><br></br><br></br></p>
+           <p><br></br></p>
             </div>  </TableCell>
                 <TableCell align="center">{"           "}</TableCell>
                 <TableCell align="center">{"           "}</TableCell>

@@ -29,10 +29,22 @@ create or replace view api.vw_authenticate as
 -- -----------------------+ vw_material_disponivel  +------------------------------------------------
 drop view if exists api.vw_material_disponivel;
 create or replace view api.vw_material_disponivel as
-SELECT mat.id,cod,descricao,qtd_stock,a.area , armazem,familia,prazo, a.id as id_area
-FROM api.material mat inner join api.area a on a.id = mat.area order by qtd_stock desc ;
 
+SELECT mat.id,
+       mat.cod,
+       mat.descricao,
+       mat.qtd_stock,
+       a.area,
+       mat.armazem,
+       mat.familia,
+       mat.prazo,
+       a.id AS id_area
+FROM api.material mat
+         JOIN api.area a ON a.id = mat.area
+where mat.qtd_stock> 0
+ORDER BY mat.qtd_stock DESC;
  grant select on api.vw_material_disponivel to web_anon;
+
 
 -- -----------------------------------------------------------------------------------------
 
@@ -135,7 +147,8 @@ FROM api.requisicao r
     left join api.guia_saida gs on gs.id = r.nr_guia
     left join api.colaborador_area ca on ca.colaborador = c.id
     left join api.area a on a.id = ca.area
-    left join api.status s on s.id = gs.status;
+    left join api.status s on s.id = gs.status
+order by r.data_requisicao desc ;
 grant select on api.vw_my_requisicao to web_anon;
 select  * from api.vw_my_requisicao where area = 'APSS';
 -------------------------------------------------------------------------------------------------------------------------------
@@ -190,14 +203,14 @@ grant select on api.vw_sumario_requisicoes_pendentes to web_anon;
 drop view if exists api.vw_requisicoes_pendentes;
 create or replace view api.vw_requisicoes_pendentes as
 SELECT   r.id as id_requisicao, r.data_requisicao::date, m.descricao as material_descricao, r.quantidade, a.area , us.id as id_us,
-         us.nome as unidade_sanitaria,pf_nome,pf_contacto,  r.requisitante, c.nome as requisitante_nome, r.notas, p.nome as projecto, r.canceled
+         us.nome as unidade_sanitaria, c.nome as requisitante_nome,pf_nome,pf_contacto,  r.requisitante, r.notas, p.nome as projecto, r.canceled
 FROM api.requisicao r
     inner join api.material m on m.id = r.material
     inner join api.area a on a.id = m.area
     inner join api.unidade_sanitaria  us on us.id = r.unidade_sanitaria
     inner join api.colaborador c on r.requisitante = c.id
     inner join api.projecto p on p.id = m.projecto
-where nr_guia is null;
+where nr_guia is null and r.canceled = 'No' order by r.data_requisicao desc;
 grant select on api.vw_requisicoes_pendentes to web_anon;
 -- -----------------------------------------------------------------------------------------
 
@@ -322,7 +335,13 @@ FROM api.guia_saida gs
     inner join api.colaborador c on c.id = gs.motorista
     inner join api.unidade_sanitaria us on us.id = gs.unidade_sanitaria
     inner join api.area a on a.id = gs.area
-    inner join api.status s on s.id = gs.status;
+    inner join api.status s on s.id = gs.status
+order by gs.data_guia desc,
+    CASE
+        WHEN s.name  = 'NOVA' THEN 1
+        WHEN s.name  = 'ENTREGUE' THEN 2
+        ELSE 3
+    END;
 grant select on api.vw_guias_saida to web_anon;
 ------------------------------------------------------------------------------------------------------
 -------------------------+ vw_requisicao_by_guia     +-----------------------------------------------------

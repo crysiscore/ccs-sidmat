@@ -349,8 +349,6 @@ const handleImprimirGuia = () => {}
                     <div>
                      <p>
                       <br></br>
-                      <br></br>
-                      <br></br>
                      </p>
                     </div>  
                     </TableCell>

@@ -13,6 +13,8 @@ import Tab from '@mui/material/Tab';
 import TabContext from '@mui/lab/TabContext';
 import TabList from '@mui/lab/TabList';
 import TabPanel from '@mui/lab/TabPanel';
+import { all } from "axios";
+import { user } from "@nextui-org/react";
 
 
 const avatar =
@@ -45,13 +47,40 @@ function MinhasRequisicoes() {
   userData = sessionData ? JSON.parse(sessionData) : null; // Parse the retrieved data
 
   //get area property from userData
-  const area = userData ? userData[0].area : null; // Parse the retrieved data
+  //const area = userData ? userData[0].area : null; // Parse the retrieved data
   const user_id = userData ? userData[0].id : null; // Parse the retrieved data
 
   //parse sessionData to JSON
   let userInfo = [];
   userInfo = sessionData ? JSON.parse(sessionData) : null; // Parse the retrieved data
+  let userArea = "";
+  let userRole = userData[0].role;
+  let allAreas = "";
 
+  if (userRole === "Logistica") {
+    userArea ="all";
+  } else if (userRole === "Requisitante" && userData.length > 1) {
+    // for all objects in userData get their area and store in userArea
+     userArea = userData.map((item) => item.area);
+     let tempArea =userArea;
+
+     tempArea.forEach((area, index) => {
+       allAreas += `[${area}]`;
+       if (index !== tempArea.length - 1) {
+         allAreas += ',';
+       }
+     });
+ 
+  } else if (userRole === "Administrador") {
+   userArea ="all";
+   allAreas = userArea;
+  } else if (userRole === "Requisitante" && userData.length === 1) {
+ 
+   userArea = userData[0].area;
+   // make userArea an array
+   userArea = [userArea];
+   allAreas = userArea;
+   }
 
   const columnNames = [
     {
@@ -79,6 +108,11 @@ function MinhasRequisicoes() {
       header: 'Unidade Sanitaria',
     },
     {
+      accessorKey: 'requisitante',
+      header: 'Requisitante',
+      size: 10,
+    },
+    {
       accessorKey: 'pf_nome',
       header: 'Nome P. Focal',
       size: 60,
@@ -87,12 +121,6 @@ function MinhasRequisicoes() {
       accessorKey: 'pf_contacto',
       header: 'Contacto P. Focal',
       size: 60,
-    },
-
-    {
-      accessorKey: 'requisitante',
-      header: 'Requisitante',
-      size: 10,
     },
       {
         accessorKey: 'nr_guia',
@@ -114,7 +142,7 @@ function MinhasRequisicoes() {
 
 //get Material by user
 useEffect(() => {
-    getRequisicoesByUser(area) 
+    getRequisicoesByUser(userArea) 
     .then(requisicoes => { 
       setData(requisicoes);
       setHasFinishedLoading(true);
@@ -150,7 +178,7 @@ useEffect(() => {
 
 <div className="px-2 mx-auto mainCard">
         <h1 className="text-slate-500 pb-3 text-base md:text-lg">
-          Lista de Requisicoes feitas por {area}: 
+          Lista de Requisicoes feitas por {allAreas}: 
         </h1>
 
         {/* <div className="flex flex-row gap-x-4 overflow-hidden overflow-y-auto justify-between "> */}
@@ -180,7 +208,7 @@ useEffect(() => {
 
 <div className="px-2 mx-auto mainCard">
         <h1 className="text-slate-500 pb-3 text-base md:text-lg">
-          Lista de Requisicoes feitas por {area}: 
+          Lista de Requisicoes feitas por {allAreas}: 
         </h1>
 
         {/* <div className="flex flex-row gap-x-4 overflow-hidden overflow-y-auto justify-between "> */}
@@ -211,7 +239,7 @@ useEffect(() => {
 
 <div className="px-2 mx-auto mainCard">
         <h1 className="text-slate-500 pb-3 text-base md:text-lg">
-          Lista de Requisicoes feitas por {area}: 
+          Lista de Requisicoes feitas por {allAreas}: 
         </h1>
 
         {/* <div className="flex flex-row gap-x-4 overflow-hidden overflow-y-auto justify-between "> */}
@@ -266,7 +294,7 @@ user={{ name: userData[0].nome }}
 
 <div className="px-2 mx-auto mainCard">
 <h1 className="text-slate-500 pb-3 text-base md:text-lg">
-Lista de Requisições feitas por {area}: 
+Lista de Requisições feitas por {allAreas}: 
 </h1>
 
 {/* <div className="flex flex-row gap-x-4 overflow-hidden overflow-y-auto justify-between "> */}
