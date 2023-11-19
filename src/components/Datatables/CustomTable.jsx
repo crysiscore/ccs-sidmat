@@ -1324,10 +1324,20 @@ export const  MinhasRequisicoesTable = ({colunas, dados, tipo}) => {
 
 export const RequisicoesPorAreaTable = ({colunas, dados, areaInfo}) => {
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
+  const [requisicoesSelecionadas, setRequisicoesSelecionadas] = useState([]);
+  
   let requisicao = null;
   const navigate = useNavigate();
+  let requisicoesArea = dados;
+  const [open, setOpen] = React.useState(false);
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+  const [selectedUS , setSelectedUS] = useState(null);
 
-
+  const handleClose = () => {
+    setOpen(false);
+  };
    const handleExportRows = (rows) => {
     const jsonRows = rows;
 
@@ -1389,6 +1399,14 @@ export const RequisicoesPorAreaTable = ({colunas, dados, areaInfo}) => {
   }
 
 
+const handleConfirmCriarGuia = () => {
+
+  navigate('/novaGuia', {
+    state: {requisicoesSelecionadas, areaInfo },
+    replace: true,
+  });
+  setOpen(false);
+}
 
  const handleCriarGuia = (rows) => {
   // Check if multiple rows are selected
@@ -1415,17 +1433,48 @@ export const RequisicoesPorAreaTable = ({colunas, dados, areaInfo}) => {
       });
       // check if all requisicoes are from the same unidade sanitaria
       const us = materiasRequisitados[0].unidade_sanitaria;
+      setRequisicoesSelecionadas(materiasRequisitados);
+      setSelectedUS(us);
       const isSameUS = materiasRequisitados.every((requisicao) => requisicao.unidade_sanitaria === us);
       if (!isSameUS) {
         NotificationManager.error('Apenas requisicoes com mesmo destino podem ser agrupadas numa guia','Error', 14000);
         return;
       }
-      // Save idArea and materiasRequisitados to sessionStorage and Route to the requisicao page
-      navigate('/novaGuia', {
-        state: {materiasRequisitados, areaInfo },
-        replace: true,
-      });
-      
+      // remove all materiaisRequisitados from requisicoesArea and store in remaingRequisicoes
+
+      let remaingRequisicoes = requisicoesArea.filter((requisicao) => 
+    !materiasRequisitados.some((material) => material.id_requisicao === requisicao.id_requisicao)
+);
+
+
+if(remaingRequisicoes.length > 0) {
+
+ // check if there are still requisicoes in remainingRequisicoes array with the same  us
+ const remainingRequisicoesWithSameUS = remaingRequisicoes.filter((requisicao) => requisicao.unidade_sanitaria === us);
+
+ if (remainingRequisicoesWithSameUS.length > 0) {
+   
+   setOpen(true);
+ } else {
+ // Save idArea and materiasRequisitados to sessionStorage and Route to the requisicao page
+  let requisicoesSelecionadas = materiasRequisitados;
+ navigate('/novaGuia', {
+   state: {requisicoesSelecionadas, areaInfo },
+   replace: true,
+ });
+ 
+
+ }
+
+} else {
+
+navigate('/novaGuia', {
+  state: {materiasRequisitados, areaInfo },
+  replace: true,
+});
+
+} 
+
 
   }
 
@@ -1433,7 +1482,7 @@ export const RequisicoesPorAreaTable = ({colunas, dados, areaInfo}) => {
 
 
   return (
-
+    <div>
     <MaterialReactTable
       columns={colunas}
       data={dados}
@@ -1471,6 +1520,21 @@ export const RequisicoesPorAreaTable = ({colunas, dados, areaInfo}) => {
       
       )}
     />
+    <div>
+    <Dialog open={open} onClose={handleClose}>
+        <DialogTitle> Confirmar   </DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+          </DialogContentText>
+           Ainda existem outros pedidos com a mesma US:  {selectedUS} . Deseja continuar?
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Cancel</Button>
+          <Button onClick={handleConfirmCriarGuia}>Continuar</Button>
+        </DialogActions>
+      </Dialog>
+</div>
+</div>
 
   );
 };

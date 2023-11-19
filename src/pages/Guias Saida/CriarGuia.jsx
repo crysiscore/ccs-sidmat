@@ -310,7 +310,7 @@ const handleImprimirGuia = () => {}
 
   }  else {
 
-    materiaisGuia = estado.materiasRequisitados;
+    materiaisGuia = estado.requisicoesSelecionadas;
 
 
       //TODO Fix this should be done in the return statement
