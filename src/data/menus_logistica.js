@@ -62,7 +62,7 @@ const initMenuLogistica = [
     icon: faCirclePlus,
   },
   {
-    label: 'Administracao'
+    label: 'Administração'
   },
   {
     label: "Gestão de Utilizadores",

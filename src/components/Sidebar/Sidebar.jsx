@@ -86,7 +86,7 @@ function Sidebar({ ...props }) {
             <div className="py-2 px-4">
               {/* Logout Button */}
               <button
-                className="py-2 px-4 border border-emerald-500 bg-emerald-600 w-full rounded-full text-gray-200 hover:bg-emerald-600 hover:border-emerald-600 justify-end text-sm"
+                className="py-2 px-4 border border-blue-500 bg-blue-600 w-full rounded-full text-gray-200 hover:bg-blue-600 hover:border-blue-600 justify-end text-sm"
                 onClick={() => logout()}
               >
                 <FontAwesomeIcon icon={faSignOut}></FontAwesomeIcon> Sair

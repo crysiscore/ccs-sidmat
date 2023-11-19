@@ -96,6 +96,17 @@ export async function listRequisicoesByGuia(nr_guia) {
         }
     }
 
+    //create a function to update a guia  using the stored procedure sp_update_guia_saida,  using the nr_guia as parameter.
+    export async function getGuiaSaida(nr_guia) {
+        try{
+            const response = await api.get('/vw_guias_saida?nr_guia=eq.' + nr_guia);
+            return response.data;
+        }catch(error) {
+            throw error;
+        
+        }
+    }
+
   
   
   

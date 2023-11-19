@@ -46,13 +46,6 @@ function MinhasRequisicoes() {
   let userData = [];
   userData = sessionData ? JSON.parse(sessionData) : null; // Parse the retrieved data
 
-  //get area property from userData
-  //const area = userData ? userData[0].area : null; // Parse the retrieved data
-  const user_id = userData ? userData[0].id : null; // Parse the retrieved data
-
-  //parse sessionData to JSON
-  let userInfo = [];
-  userInfo = sessionData ? JSON.parse(sessionData) : null; // Parse the retrieved data
   let userArea = "";
   let userRole = userData[0].role;
   let allAreas = "";

@@ -21,12 +21,37 @@ import { createTheme, ThemeProvider } from '@mui/material/styles';
 import Button from '@mui/material/Button';
 import md5 from 'md5';
 import { wait } from "@testing-library/user-event/dist/utils/index.js";
-
-
+import Box from '@mui/material/Box';
+import OutlinedInput from '@mui/material/OutlinedInput';
+import InputLabel from '@mui/material/InputLabel';
+import MenuItem from '@mui/material/MenuItem';
+import FormControl from '@mui/material/FormControl';
+import Select from '@mui/material/Select';
+import Chip from '@mui/material/Chip';
+import { useTheme } from '@mui/material/styles';
 
 const avatar =
 "https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80";
 
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+      width: 250,
+    },
+  },
+};
+
+function getStyles(name, personName, theme) {
+  return {
+    fontWeight:
+      personName.indexOf(name) === -1
+        ? theme.typography.fontWeightRegular
+        : theme.typography.fontWeightMedium,
+  };
+}
 
 let theme = createTheme({
   palette: {
@@ -57,6 +82,19 @@ export const  RegistoColaborador=() => {
   const [colaboradores, setColaboradores] = useState();
   const [error, setError] = useState(null);
   const {enableSalvar, EnableSalvar} = useState(false);
+
+  const [areaName, setAreaName] = React.useState([]);
+  const componentTheme = useTheme();
+
+  const handleAreaNameChange = (event) => {
+    const {
+      target: { value },
+    } = event;
+    setAreaName(
+      // On autofill we get a stringified value.
+      typeof value === 'string' ? value.split(',') : value,
+    );
+  };
 
   const columnNamesColaborador= [
 
@@ -177,11 +215,9 @@ const handleSalvarColaborador = async () => {
   const email = document.getElementById("email").value;
   const contacto = document.getElementById("contacto").value;
   const cargo = document.getElementById("cargo").value;
-  const area_name = document.getElementById("combo-box-area").value;
   const role_name = document.getElementById("combo-box-roles").value;
   const username = document.getElementById("username").value;
   const password = document.getElementById("password").value;
-
 
   // if any of the fields is empty, show error message
   if(role_name === ""){
@@ -190,7 +226,7 @@ const handleSalvarColaborador = async () => {
 
   } else if(role_name === "Motorista"){
 
-    if(nome === ""     || username === "" || password === "" || area_name === ""){
+    if(nome === ""     || username === "" || password === "" || areaName.length === 0){
       NotificationManager.error('Preencha todos os campos', 'Erro!', 5000);
       return;
     }
@@ -222,11 +258,12 @@ const handleSalvarColaborador = async () => {
     }
   
   
-    // for role and area get the id of the selected item
-    const selectedArea = areasProgramaticas.find(item => item.area === area_name);
+    // get all areas with the name in the areaName array
+    const selectedAreas = areasProgramaticas.filter(item => areaName.includes(item.area));
+
     const selectedRole = roles.find(item => item.name === role_name);
   
-    const id_area = selectedArea.id;
+    const ids_area = selectedAreas.map(item => item.id);
     const id_role = selectedRole.id;
   
   
@@ -242,7 +279,7 @@ const handleSalvarColaborador = async () => {
       emailaddress: email,
       contacto_colaborador: contacto? contacto : "N/A",
       funcao_colaborador: cargo? cargo : "Motorista",
-      id_area: id_area,
+      id_area: ids_area,
       id_role: id_role,
       user_name: email,
       pass: hashedPassword
@@ -261,7 +298,7 @@ const handleSalvarColaborador = async () => {
         document.getElementById("email").value = "";
         document.getElementById("contacto").value = "";
         document.getElementById("cargo").value = "";
-        document.getElementById("combo-box-area").value = "";
+       setAreaName([]);
         document.getElementById("combo-box-roles").value = "";
         document.getElementById("username").value = "";
         document.getElementById("password").value = "";
@@ -289,8 +326,12 @@ const handleSalvarColaborador = async () => {
         }
 
   } else {
-    if(nome === "" || email === ""  || cargo === "" || area_name === ""  || username === "" || password === ""){
+    if(nome === "" || email === ""  || cargo === ""   || username === "" || password === ""){
       NotificationManager.error('Preencha todos os campos', 'Erro!', 5000);
+      return;
+    }
+    if(areaName.length === 0){
+      NotificationManager.error('Selecione a Area do Utilizador', 'Erro!', 5000);
       return;
     }
   
@@ -320,12 +361,13 @@ const handleSalvarColaborador = async () => {
       return;
     }
   
-  
-    // for role and area get the id of the selected item
-    const selectedArea = areasProgramaticas.find(item => item.area === area_name);
+    //const selectedArea = areasProgramaticas.find(item => item.area === area_name);
+    // find all selected areas )(areaName) in the areasProgramaticas array 
+    const selectedAreas = areasProgramaticas.filter(item => areaName.includes(item.area));
+
     const selectedRole = roles.find(item => item.name === role_name);
   
-    const id_area = selectedArea.id;
+    const ids_area = selectedAreas.map(item => item.id);
     const id_role = selectedRole.id;
   
   
@@ -341,7 +383,7 @@ const handleSalvarColaborador = async () => {
       emailaddress: email,
       contacto_colaborador: contacto? contacto : "N/A",
       funcao_colaborador: cargo,
-      id_area: id_area,
+      ids_area: ids_area,
       id_role: id_role,
       user_name: email,
       pass: hashedPassword
@@ -358,7 +400,7 @@ const handleSalvarColaborador = async () => {
         document.getElementById("email").value = "";
         document.getElementById("contacto").value = "";
         document.getElementById("cargo").value = "";
-        document.getElementById("combo-box-area").value = "";
+        setAreaName([]);
         document.getElementById("combo-box-roles").value = "";
         document.getElementById("username").value = "";
         document.getElementById("password").value = "";
@@ -532,14 +574,45 @@ const handleCancel = () => {
                  <TableRow >
 
                     <TableCell align = "right">
-                    < Autocomplete
+         {/*            < Autocomplete
                     disablePortal
                     
                     id="combo-box-area"
                     options={list_areas}
                     sx={{ width: 200 }}
                     renderInput={(params) => <TextField {...params} label="Area Programatica" />}
-                    />
+                    /> */}
+                    
+      <FormControl sx={{  width: 300 }}>
+        <InputLabel id="demo-multiple-chip-label">Area:</InputLabel>
+        <Select
+          labelId="multiple-chip-label"
+          id="combo-box-area"
+          multiple
+          value={areaName}
+          onChange={handleAreaNameChange}
+          input={<OutlinedInput id="select-multiple-chip" label="Area:" />}
+          renderValue={(selected) => (
+            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              {selected.map((value) => (
+                <Chip key={value} label={value} />
+              ))}
+            </Box>
+          )}
+          MenuProps={MenuProps}
+        >
+          {list_areas.map((item) => (
+            <MenuItem
+              key={item.id}
+              value={item.label}
+              style={getStyles(item.label, areaName, componentTheme)}
+            >
+              {item.label}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
                     </TableCell>
                     <TableCell align = "left">     < Autocomplete
                     disablePortal

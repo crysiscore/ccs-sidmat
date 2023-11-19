@@ -36,7 +36,7 @@
 }
 
 .cardSuccess{
-    @apply bg-emerald-200 text-emerald-900  border border-emerald-400
+    @apply bg-blue-200 text-blue-900  border border-blue-400
 }
 
 .cardLime{

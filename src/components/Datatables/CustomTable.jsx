@@ -1043,7 +1043,7 @@ const handleSaveRow =  ({ exitEditingMode, row, values }) => {
 };
 
 // TODO highlight selected row
-export const MinhasRequisicoesTable = ({colunas, dados, tipo}) => {
+export const  MinhasRequisicoesTable = ({colunas, dados, tipo}) => {
   const [selectedRow, setSelectedRow] = useState(null);
   const [requisicoes, setUpdateRequisicoes] = useState([...dados]);
 
@@ -1090,9 +1090,9 @@ export const MinhasRequisicoesTable = ({colunas, dados, tipo}) => {
           material_descricao: row.getValue('material'),
           quantidade: row.getValue('quantidade'),
           unidade_sanitaria: row.getValue('unidade_sanitaria'),
+          requisitante: row.getValue('requisitante'),
           pf_nome: row.getValue('pf_nome'),
           pf_contacto: row.getValue('pf_contacto'),
-          requisitante: row.getValue('requisitante'),
           nr_guia: row.getValue('nr_guia'),
           notas: row.getValue('notas'),
           area: row.getValue('area')
@@ -1108,7 +1108,7 @@ export const MinhasRequisicoesTable = ({colunas, dados, tipo}) => {
     
    
      /* fix headers */
-     utils.sheet_add_aoa(worksheet, [["Data", "Material","Qtd. Requisitada","Unidade Sanitaria","Ponto Focal","Contacto","Requisitante","Numero da Guia","Notas", "Area"]], { origin: "A1" });
+     utils.sheet_add_aoa(worksheet, [["Data", "Material","Qtd. Requisitada","Unidade Sanitaria","Requisitante","Ponto Focal","Contacto","Numero da Guia","Notas", "Area"]], { origin: "A1" });
    
    // Make column names bold by iterating through the header cells
    // const headerCellStyle = { font: { bold: true } };
@@ -1499,7 +1499,9 @@ export const GuiasPorAreaTable = ({colunas, dados}) => {
           previsao_entrega: row.getValue('previsao_entrega'),
           estado: row.getValue('status'),
           observacao: row.getValue('observacao'),
-          data_entrega: row.getValue('data_entrega')
+          data_entrega: row.getValue('data_entrega'),
+          criador: row.getValue('createdby'),
+          confirmador: row.getValue('confirmedby')
         };
         return guia;
       
@@ -1512,7 +1514,7 @@ export const GuiasPorAreaTable = ({colunas, dados}) => {
 
 
       /* fix headers */
-      utils.sheet_add_aoa(worksheet, [["Numero da Guia", "Data","Unidade Sanitaria","Area","Motorista","Previsao de Entrega","Estado","Observacao","Data de Entrega"]], { origin: "A1" });
+      utils.sheet_add_aoa(worksheet, [["Numero da Guia", "Data","Unidade Sanitaria","Area","Motorista","Previsao de Entrega","Estado","Observacao","Data de Entrega","Criado Por", "Confirmado Por"]], { origin: "A1" });
 
       /* calculate column width ( number of properties from rows object) */
       const max_width = Object.keys(rows[0]).reduce((acc, key) => Math.max(acc, key.length), 0);
@@ -1558,7 +1560,9 @@ export const GuiasPorAreaTable = ({colunas, dados}) => {
           motorista: row.getValue('motorista'),
           previsao_entrega: row.getValue('previsao_entrega'),
           observacao: row.getValue('observacao'),
-          data_entrega: row.getValue('data_entrega')
+          data_entrega: row.getValue('data_entrega'),
+          created_by: row.getValue('createdby'),
+          confirmed_by: row.getValue('confirmedby')
         };
         return guia;
 
@@ -1627,7 +1631,9 @@ export const AreasProgramaticasTable = ({colunas, dados  }) => {
 
 
   const [areaDescricao, setAreaDescricao] = useState('');
-  const [areaNome, setAreaNome] = useState(0); 
+  const [areaNome, setAreaNome] = useState(''); 
+  //const [otherDescription, setOtherDescription] = useState('');
+
 
   const handleAreaDescricaoChange = (event) => {
     setAreaDescricao(event.target.value);
@@ -1638,8 +1644,7 @@ export const AreasProgramaticasTable = ({colunas, dados  }) => {
   };
 
   const [areaToEdit, setAreaToEdit] = useState(null);
-  // create a ref to areaToEdit
-  const areaToEditRef = React.useRef(areaToEdit);
+
   const [open, setOpen] = React.useState(false);
   const handleClickOpen = () => {
     setOpen(true);
@@ -1673,24 +1678,25 @@ export const AreasProgramaticasTable = ({colunas, dados  }) => {
     } else {
 
      // create an area object with the selected row values
-
+      let  areTOEdit = null;
+      
       rows.map((row) => {
         // Get values from the selected row and create a json object
-        const area = {
+       let  area= {
           id: row.getValue('id'),
           area: row.getValue('area'),
           descricao: row.getValue('descricao'),
         };
-        setAreaDescricao(area.descricao);
-        setAreaNome(area.area);
-        setAreaToEdit(area);
+        areTOEdit = area;
+      });
 
-        handleClickOpen();
-        // set the values of the area-descricao-edit and area-name-edit to the values of the selected row
+      setAreaDescricao(areTOEdit.descricao);
+      setAreaNome(areTOEdit.area);
+      setAreaToEdit(areTOEdit);
 
+      handleClickOpen();
 
-      })
-    } ;// end of map
+    } // end of map
 
   };
   const handleChangeAreaStatus = async (rows) => {
@@ -1758,12 +1764,12 @@ export const AreasProgramaticasTable = ({colunas, dados  }) => {
 
 const handleSaveEditedArea = async () => {
   // Get the values from the form
-  const areaName = document.getElementById('area-name-edit').value;
-  const areaDescricao = document.getElementById('area-descricao-edit').value;
-
+  let area = document.getElementById('area-name-edit').value;
+  let descricao = document.getElementById('descricao-edit').value;
+  
 
   // Check if the values are empty
-  if (areaName === '' || areaDescricao === '' ) {
+  if (area === '' || descricao === '' ) {
     NotificationManager.error('Preencha todos os campos','Error', 4000);
     return;
   }
@@ -1771,8 +1777,8 @@ const handleSaveEditedArea = async () => {
   // Create an area object with the values
   let newArea = {
     id_area: areaToEdit.id,
-    area_name: areaName,
-    area_descricao: areaDescricao,
+    area_name: area,
+    area_descricao: descricao,
   };
 
   // Update the area
@@ -1914,11 +1920,10 @@ const handleExportAreas = (rows) => {
           <br>
           </br>
           <TextField
-            margin="dense"
-            id="area-descricao-edit"
+            id="descricao-edit"
             label="Descricao"
            value={areaDescricao}
-           onchange={handleAreaDescricaoChange}
+           onChange={handleAreaDescricaoChange}
             sx={{ width: 300 }}
             variant="standard"
           />

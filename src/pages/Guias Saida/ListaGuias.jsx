@@ -91,7 +91,17 @@ export const  ListaGuias=(props) => {
     {
       accessorKey: 'foto_id',
       header: 'Link Da foto',
-      size: 60,
+      size: 10,
+    },
+    {
+      accessorKey: 'createdby',
+      header: 'Criado por',
+      size: 10,
+    },
+    {
+      accessorKey: 'confirmedby',
+      header: 'Confirmado por',
+      size: 10,
     }
   ];
 

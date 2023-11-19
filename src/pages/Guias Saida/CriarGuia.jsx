@@ -227,6 +227,7 @@ let guia = {
   numero_guia: nr_guia,
   id_requisicao: id_requisicao,
   projecto: projecto,
+  created_by: userData[0].id,
 };
 
 // send guia to backend

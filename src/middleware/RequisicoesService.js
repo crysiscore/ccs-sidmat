@@ -31,7 +31,7 @@ export async function getRequisicoesByUser(area) {
                     });
     
              allAreas = allAreas.replace(/&/g, '%26');
-             const response = await api.get('/vw_my_requisicao?area=in.(' + allAreas + ')order=');
+             const response = await api.get('/vw_my_requisicao?area=in.(' + allAreas + ')');
              return  response.data;
                   } else {
   

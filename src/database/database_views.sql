@@ -144,13 +144,13 @@ FROM api.requisicao r
     inner join api.material m on m.id = r.material
     inner join api.unidade_sanitaria us on us.id = r.unidade_sanitaria
     inner join api.colaborador c on c.id = r.requisitante
+    inner join api.area a on  a.id = m.area
     left join api.guia_saida gs on gs.id = r.nr_guia
-    left join api.colaborador_area ca on ca.colaborador = c.id
-    left join api.area a on a.id = ca.area
     left join api.status s on s.id = gs.status
+where r.canceled = 'No'
 order by r.data_requisicao desc ;
 grant select on api.vw_my_requisicao to web_anon;
-select  * from api.vw_my_requisicao where area = 'APSS';
+select  * from api.vw_my_requisicao where area in ('MQ');
 -------------------------------------------------------------------------------------------------------------------------------
 -- -----------------------+ vw_my_requisicao  +-----------------------------------
 -- create a view thal will show the requisicao of the user, the result must contain the folowing fields
@@ -268,7 +268,8 @@ create or replace function  api.sp_create_guia_saida(
  id_area bigint,
  numero_guia varchar,
  id_requisicao bigint[],
- projecto varchar)
+ projecto varchar,
+ created_by bigint)
  returns bigint
  language plpgsql
  as $$
@@ -288,15 +289,15 @@ begin
     end if;
 
     -- insert  guia_saida
-    insert into api.guia_saida (motorista, unidade_sanitaria, previsao_entrega, status, observacao, area, data_guia, nr_guia)
-    values (id_motorista, us, entrega, 1, notas, id_area, current_date, guia_with_prefix)
+    insert into api.guia_saida (motorista, unidade_sanitaria, previsao_entrega, status, observacao, area, data_guia, nr_guia, createdby)
+    values (id_motorista, us, entrega, 1, notas, id_area, current_date, guia_with_prefix, created_by)
     returning id into id_guia;
     -- update all requisicao with the id_guia
     update api.requisicao set nr_guia = id_guia where id = any(id_requisicao);
     return id_guia;
 end; $$;
-alter function api.sp_create_guia_saida( bigint,  bigint,  date,    varchar,  bigint,  varchar,  bigint[], varchar) owner to sidmat;
-grant execute on function api.sp_create_guia_saida(  bigint,  bigint,  date,    varchar,  bigint,  varchar,  bigint[], varchar) to web_anon;
+alter function api.sp_create_guia_saida( bigint,  bigint,  date,    varchar,  bigint,  varchar,  bigint[], varchar,bigint) owner to sidmat;
+grant execute on function api.sp_create_guia_saida(  bigint,  bigint,  date,    varchar,  bigint,  varchar,  bigint[], varchar, bigint) to web_anon;
 ------------------------------------------------------------------------------------------------------
 -------------------------+ sp_confirmar_guia_saida     +-----------------------------------------------------
 -- Create a stored procedure to update a guia de saida from status Nova (1) to Entregue (4)
@@ -330,12 +331,16 @@ grant execute on function api.sp_confirmar_guia_saida( bigint,bigint,bigint) to 
 drop view if exists api.vw_guias_saida;
 create or replace view api.vw_guias_saida as
 SELECT gs.id, gs.nr_guia, gs.data_guia::date, s.name as status, gs.previsao_entrega::date, gs.observacao,
-       c.nome as motorista, us.nome as unidade_sanitaria, a.area, gs.data_entrega::date
+       c.nome as motorista, us.nome as unidade_sanitaria, a.area, gs.data_entrega::date, c2.nome as createdby, c3.nome as confirmedby
 FROM api.guia_saida gs
     inner join api.colaborador c on c.id = gs.motorista
+
     inner join api.unidade_sanitaria us on us.id = gs.unidade_sanitaria
     inner join api.area a on a.id = gs.area
     inner join api.status s on s.id = gs.status
+
+  left join api.colaborador c2 on c2.id = gs.createdby
+    left join api.colaborador c3 on c3.id = gs.confirmedby
 order by gs.data_guia desc,
     CASE
         WHEN s.name  = 'NOVA' THEN 1
@@ -343,6 +348,8 @@ order by gs.data_guia desc,
         ELSE 3
     END;
 grant select on api.vw_guias_saida to web_anon;
+
+
 ------------------------------------------------------------------------------------------------------
 -------------------------+ vw_requisicao_by_guia     +-----------------------------------------------------
 -- create a view to list all requisicoes beloging to a guia de saida
@@ -625,13 +632,14 @@ grant execute on function api.sp_insert_armazem(varchar, varchar) to web_anon;
 -- the stored procedure must return the id
 drop function if exists api.sp_insert_colaborador(varchar, varchar, varchar, varchar, bigint, bigint, varchar, varchar);
 create or replace function api.sp_insert_colaborador(nome_colaborador varchar, emailaddress varchar, contacto_colaborador varchar,
-funcao_colaborador varchar, id_area bigint, id_role bigint, user_name varchar, pass varchar)
+funcao_colaborador varchar, ids_area bigint[], id_role bigint, user_name varchar, pass varchar)
  returns bigint
  language plpgsql
  as $$
 declare
     id_colaborador bigint;
     id_usuario bigint;
+    declare id_area bigint;
 begin
     -- first check if colaborador already exists
     if exists(select 1 from api.colaborador c where c.email = emailaddress) then
@@ -639,8 +647,12 @@ begin
     end if;
     -- insert colaborador
     insert into api.colaborador (nome, email, contacto,funcao) values (nome_colaborador, emailaddress, contacto_colaborador,funcao_colaborador) returning id into id_colaborador;
-    -- insert colaborador_area
-    insert into api.colaborador_area (colaborador, area) values (id_colaborador, id_area);
+    -- insert colaborador_area, note that the area is an array . so we need to loop through the array
+    FOREACH id_area IN ARRAY ids_area
+    LOOP
+        insert into api.colaborador_area (colaborador, area) values (id_colaborador, id_area);
+    END LOOP;
+
     -- insert usuario
     insert into api.usuario (username, password, colaborador) values (user_name, pass, id_colaborador) returning id into id_usuario;
     -- insert user_role
@@ -648,8 +660,8 @@ begin
     return id_colaborador;
 end; $$;
 
-alter function api.sp_insert_colaborador(varchar, varchar, varchar, varchar, bigint, bigint, varchar, varchar) owner to sidmat;
-grant execute on function api.sp_insert_colaborador(varchar, varchar, varchar, varchar, bigint, bigint, varchar, varchar) to web_anon;
+alter function api.sp_insert_colaborador(varchar, varchar, varchar, varchar, bigint[], bigint, varchar, varchar) owner to sidmat;
+grant execute on function api.sp_insert_colaborador(varchar, varchar, varchar, varchar, bigint[], bigint, varchar, varchar) to web_anon;
 ------------------------------------------------------------------------------------------------------
 -------------------------+ vw_all_colaboradores   +-----------------------------------------------------
 -- create a view that returns all colaboradores including the area and role
