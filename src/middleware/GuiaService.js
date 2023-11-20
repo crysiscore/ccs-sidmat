@@ -25,33 +25,55 @@ export async function createGuia(guiaInfo) {
   // create a function to list all guias de saida by area
   export async function listGuiasByArea(area) {
     
-    
-    // if area = "all" then list all guias de saida else list guias de saida by area
-    if (area === "all") {
-        try{
-            const response = await api.get('/vw_guias_saida');
-            return response.data;
-        }catch(error) {
-            throw error;
-          
-        }
+    let allAreas = "";
 
-  } else {
-    try{
-
-        let tempArea =area;
-    // if tempArea contains special character & replace it with  '%26'
-    if (tempArea.includes('&')) {
-        tempArea = tempArea.replace(/&/g, '%26');
-      } 
-        const response = await api.get('/vw_guias_saida?area=eq.' + tempArea);
-        return response.data;
-    }catch(error) {
-        throw error;
+    try {
+        if(area.length> 1 ){
+            let tempArea =area;
+                      tempArea.forEach((area, index) => {
+                        allAreas += `"${area}"`;
+                        if (index !== tempArea.length - 1) {
+                          allAreas += ',';
+                        }
+                      });
       
+               allAreas = allAreas.replace(/&/g, '%26');
+               const response = await api.get('/vw_guias_saida?area=in.(' + allAreas + ')');
+               return  response.data;
+                    } else {
+    
+                      let tempArea =area[0];
+                          // if area = "all" then list all guias de saida else list guias de saida by area
+                        if (tempArea === "all") {
+                            
+                                const response = await api.get('/vw_guias_saida');
+                                return response.data;
+    
+                    } else {
+    
+                        // if tempArea contains special character & replace it with  '%26'
+                        if (tempArea.includes('&')) {
+                            tempArea = tempArea.replace(/&/g, '%26');
+                          } 
+                            const response = await api.get('/vw_guias_saida?area=eq.' + tempArea);
+                            return response.data;
+                    }
+    
+           
+    
+                    }
+    
+        
+    } catch (error) {
+        throw error;
     }
+
+
+
+
+
   }
-}
+
 // create a function to lista all requisicoes by guia
 export async function listRequisicoesByGuia(nr_guia) {
     try{
@@ -67,6 +89,17 @@ export async function listRequisicoesByGuia(nr_guia) {
     export async function updateGuia(guiaInfo) {
         try{
             const response = await api.post('/rpc/sp_confirmar_guia_saida', guiaInfo, {headers: {'Prefer': 'return=representation'}});
+            return response.data;
+        }catch(error) {
+            throw error;
+        
+        }
+    }
+
+    //create a function to update a guia  using the stored procedure sp_update_guia_saida,  using the nr_guia as parameter.
+    export async function getGuiaSaida(nr_guia) {
+        try{
+            const response = await api.get('/vw_guias_saida?nr_guia=eq.' + nr_guia);
             return response.data;
         }catch(error) {
             throw error;

@@ -185,7 +185,7 @@ const MaterialGuiaHeader = ( props) => {
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
         
-                <TableCell align="left">  {props.user}</TableCell>
+                <TableCell align="left">  {props.creator}</TableCell>
                 <TableCell align="center">{"           "}</TableCell>
                 <TableCell align="center">{"           "}</TableCell>
                 <TableCell align="center">{"           "}</TableCell>
@@ -200,7 +200,7 @@ const MaterialGuiaHeader = ( props) => {
                 <TableCell align = "center"> { props.data_entrega? <b style={{ color: '#4caf50' }}>Data de entrega:</b> : <b>Data de entrega:</b> }</TableCell>
                 <TableCell align = "left">	 <b style={{ color: '#4caf50' }}>{props.data_entrega}{"           "}</b></TableCell>
               </TableRow>
-              <TableRow
+              {/*               <TableRow
                 key={props.user}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
               >
@@ -209,7 +209,7 @@ const MaterialGuiaHeader = ( props) => {
                 <TableCell align="center">{"           "}</TableCell>
                 <TableCell align="center">{"           "}</TableCell>
                 <TableCell align="center">{"           "}	</TableCell>
-              </TableRow>
+              </TableRow> */}
               <TableRow
                 key={props.user}
                 sx={{ '&:last-child td, &:last-child th': { border: 0 } }}

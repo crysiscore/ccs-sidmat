@@ -29,10 +29,22 @@ create or replace view api.vw_authenticate as
 -- -----------------------+ vw_material_disponivel  +------------------------------------------------
 drop view if exists api.vw_material_disponivel;
 create or replace view api.vw_material_disponivel as
-SELECT mat.id,cod,descricao,qtd_stock,a.area , armazem,familia,prazo, a.id as id_area
-FROM api.material mat inner join api.area a on a.id = mat.area order by qtd_stock desc ;
 
+SELECT mat.id,
+       mat.cod,
+       mat.descricao,
+       mat.qtd_stock,
+       a.area,
+       mat.armazem,
+       mat.familia,
+       mat.prazo,
+       a.id AS id_area
+FROM api.material mat
+         JOIN api.area a ON a.id = mat.area
+where mat.qtd_stock> 0
+ORDER BY mat.qtd_stock DESC;
  grant select on api.vw_material_disponivel to web_anon;
+
 
 -- -----------------------------------------------------------------------------------------
 
@@ -132,12 +144,33 @@ FROM api.requisicao r
     inner join api.material m on m.id = r.material
     inner join api.unidade_sanitaria us on us.id = r.unidade_sanitaria
     inner join api.colaborador c on c.id = r.requisitante
+    inner join api.area a on  a.id = m.area
+    left join api.guia_saida gs on gs.id = r.nr_guia
+    left join api.status s on s.id = gs.status
+where r.canceled = 'No'
+order by r.data_requisicao desc ;
+grant select on api.vw_my_requisicao to web_anon;
+select  * from api.vw_my_requisicao where area in ('MQ');
+-------------------------------------------------------------------------------------------------------------------------------
+-- -----------------------+ vw_my_requisicao  +-----------------------------------
+-- create a view thal will show the requisicao of the user, the result must contain the folowing fields
+-- id, data_requisicao, material, quantidade, unidade_sanitaria, pf_contacto, pf_nome, user as requisitante, notas, nr_guia
+-- the view must be created in the api schema
+-- the view must be created with the name vw_my_requisicao
+drop view if exists api.vw_my_area_requisicao;
+create or replace view api.vw_my_area_requisicao as
+SELECT r.id, r.data_requisicao::date, m.descricao as material, r.quantidade, us.nome as unidade_sanitaria,
+       r.pf_contacto, r.pf_nome, c.nome as requisitante, c.id as requisitante_id, r.nr_guia as id_guia ,gs.nr_guia as nr_guia,s.name as guia_status,  r.notas, a.area, r.canceled
+FROM api.requisicao r
+    inner join api.material m on m.id = r.material
+    inner join api.unidade_sanitaria us on us.id = r.unidade_sanitaria
+    inner join api.colaborador c on c.id = r.requisitante
     left join api.guia_saida gs on gs.id = r.nr_guia
     left join api.colaborador_area ca on ca.colaborador = c.id
     left join api.area a on a.id = ca.area
     left join api.status s on s.id = gs.status;
-grant select on api.vw_my_requisicao to web_anon;
-select  * from api.vw_my_requisicao;
+grant select on api.vw_my_area_requisicao to web_anon;
+select  * from api.vw_my_area_requisicao where area = 'APSS';
 -- -----------------------------------------------------------------------------------------
 -- -----------------------+ vw_requisicao_by_area      +-----------------------------------
 -- create a view thal will show the total of  requisicao of the area, the result must contain the folowing fields
@@ -162,7 +195,7 @@ SELECT a.id, a.area , count(r.id) as total_requisicao, count(distinct r.unidade_
 FROM api.requisicao r
     inner join api.material m on m.id = r.material
     inner join api.area a on a.id = m.area
- where nr_guia is null group by a.id,a.area;
+ where r.canceled='No' and nr_guia is null group by a.id,a.area;
 grant select on api.vw_sumario_requisicoes_pendentes to web_anon;
 -- -----------------------------------------------------------------------------------------
 -- -----------------------+ vw_requisicoes_pendentes  +-----------------------------------
@@ -170,14 +203,14 @@ grant select on api.vw_sumario_requisicoes_pendentes to web_anon;
 drop view if exists api.vw_requisicoes_pendentes;
 create or replace view api.vw_requisicoes_pendentes as
 SELECT   r.id as id_requisicao, r.data_requisicao::date, m.descricao as material_descricao, r.quantidade, a.area , us.id as id_us,
-         us.nome as unidade_sanitaria,pf_nome,pf_contacto,  r.requisitante, c.nome as requisitante_nome, r.notas, p.nome as projecto, r.canceled
+         us.nome as unidade_sanitaria, c.nome as requisitante_nome,pf_nome,pf_contacto,  r.requisitante, r.notas, p.nome as projecto, r.canceled
 FROM api.requisicao r
     inner join api.material m on m.id = r.material
     inner join api.area a on a.id = m.area
     inner join api.unidade_sanitaria  us on us.id = r.unidade_sanitaria
     inner join api.colaborador c on r.requisitante = c.id
     inner join api.projecto p on p.id = m.projecto
-where nr_guia is null;
+where nr_guia is null and r.canceled = 'No' order by r.data_requisicao desc;
 grant select on api.vw_requisicoes_pendentes to web_anon;
 -- -----------------------------------------------------------------------------------------
 
@@ -235,7 +268,8 @@ create or replace function  api.sp_create_guia_saida(
  id_area bigint,
  numero_guia varchar,
  id_requisicao bigint[],
- projecto varchar)
+ projecto varchar,
+ created_by bigint)
  returns bigint
  language plpgsql
  as $$
@@ -255,15 +289,15 @@ begin
     end if;
 
     -- insert  guia_saida
-    insert into api.guia_saida (motorista, unidade_sanitaria, previsao_entrega, status, observacao, area, data_guia, nr_guia)
-    values (id_motorista, us, entrega, 1, notas, id_area, current_date, guia_with_prefix)
+    insert into api.guia_saida (motorista, unidade_sanitaria, previsao_entrega, status, observacao, area, data_guia, nr_guia, createdby)
+    values (id_motorista, us, entrega, 1, notas, id_area, current_date, guia_with_prefix, created_by)
     returning id into id_guia;
     -- update all requisicao with the id_guia
     update api.requisicao set nr_guia = id_guia where id = any(id_requisicao);
     return id_guia;
 end; $$;
-alter function api.sp_create_guia_saida( bigint,  bigint,  date,    varchar,  bigint,  varchar,  bigint[], varchar) owner to sidmat;
-grant execute on function api.sp_create_guia_saida(  bigint,  bigint,  date,    varchar,  bigint,  varchar,  bigint[], varchar) to web_anon;
+alter function api.sp_create_guia_saida( bigint,  bigint,  date,    varchar,  bigint,  varchar,  bigint[], varchar,bigint) owner to sidmat;
+grant execute on function api.sp_create_guia_saida(  bigint,  bigint,  date,    varchar,  bigint,  varchar,  bigint[], varchar, bigint) to web_anon;
 ------------------------------------------------------------------------------------------------------
 -------------------------+ sp_confirmar_guia_saida     +-----------------------------------------------------
 -- Create a stored procedure to update a guia de saida from status Nova (1) to Entregue (4)
@@ -297,13 +331,25 @@ grant execute on function api.sp_confirmar_guia_saida( bigint,bigint,bigint) to 
 drop view if exists api.vw_guias_saida;
 create or replace view api.vw_guias_saida as
 SELECT gs.id, gs.nr_guia, gs.data_guia::date, s.name as status, gs.previsao_entrega::date, gs.observacao,
-       c.nome as motorista, us.nome as unidade_sanitaria, a.area, gs.data_entrega::date
+       c.nome as motorista, us.nome as unidade_sanitaria, a.area, gs.data_entrega::date, c2.nome as createdby, c3.nome as confirmedby
 FROM api.guia_saida gs
     inner join api.colaborador c on c.id = gs.motorista
+
     inner join api.unidade_sanitaria us on us.id = gs.unidade_sanitaria
     inner join api.area a on a.id = gs.area
-    inner join api.status s on s.id = gs.status;
+    inner join api.status s on s.id = gs.status
+
+  left join api.colaborador c2 on c2.id = gs.createdby
+    left join api.colaborador c3 on c3.id = gs.confirmedby
+order by gs.data_guia desc,
+    CASE
+        WHEN s.name  = 'NOVA' THEN 1
+        WHEN s.name  = 'ENTREGUE' THEN 2
+        ELSE 3
+    END;
 grant select on api.vw_guias_saida to web_anon;
+
+
 ------------------------------------------------------------------------------------------------------
 -------------------------+ vw_requisicao_by_guia     +-----------------------------------------------------
 -- create a view to list all requisicoes beloging to a guia de saida
@@ -331,7 +377,7 @@ drop view if exists  api.view_get_requisicoes_by_nr_guia;
 create or replace view  api.view_get_requisicoes_by_nr_guia as
 
     SELECT r.id, r.data_requisicao::date, m.descricao as material_descricao, r.quantidade, us.nome as unidade_sanitaria, 'BOM' as condicao,
-       r.pf_contacto, r.pf_nome, c.nome as requisitante, r.notas, gs.nr_guia as nr_guia, gs.id as id_guia, col.nome as motorista, gs.previsao_entrega::date, s.name as status, gs.observacao, a.area, gs.data_guia::date, gs.data_entrega::date
+       r.pf_contacto, r.pf_nome, c.nome as requisitante, r.notas, gs.nr_guia as nr_guia, gs.id as id_guia, col.nome as motorista, gs.previsao_entrega::date, s.name as status, gs.observacao, a.area, gs.data_guia::date, gs.data_entrega::date as data_entrega
 FROM api.requisicao r
     inner join api.material m on m.id = r.material
     inner join api.unidade_sanitaria us on us.id = r.unidade_sanitaria
@@ -353,6 +399,7 @@ FROM api.requisicao r
     inner join api.material m on m.id = r.material
     inner join api.area a on a.id = m.area
 where date_part('year', r.data_requisicao) = date_part('year', current_date)
+and r.canceled = 'No'
 group by a.area, mes , mes_nome
 order by a.area, mes asc;
 grant select on api.vw_requisicoes_by_month to web_anon;
@@ -369,6 +416,7 @@ FROM api.requisicao r
     inner join api.material m on m.id = r.material
    -- inner join api.area a on a.id = m.area
 where date_part('year', r.data_requisicao) = date_part('year', current_date)
+and r.canceled = 'No'
 group by  mes , mes_nome
 order by  mes asc;
 grant select on api.vw_all_requisicoes_by_month to web_anon;
@@ -379,11 +427,11 @@ grant select on api.vw_all_requisicoes_by_month to web_anon;
 -- using the above code as template, create a postgres stored procedure that receives the area as the parameter and returns the total number
 -- of requisicoes by distrito for that area
 drop function if exists  api.fn_requisicoes_por_distrito;
-CREATE OR REPLACE FUNCTION api.fn_requisicoes_por_distrito(area_name varchar)
+CREATE OR REPLACE FUNCTION api.fn_requisicoes_por_distrito(area_name varchar[])
 RETURNS TABLE (distrito varchar, total_novas BIGINT, total_processadas BIGINT,total_completas  BIGINT , color text) AS $$
 BEGIN
     RETURN QUERY
-    select req_novas.distrito, req_novas.total_requisicoes as total_novas,
+ select total_req.distrito, req_novas.total_requisicoes as total_novas,
        req_processadas.total_requisicoes as total_processadas,
        req_completas.total_requisicoes as total_completas , 'cardSuccess' as color from (
 SELECT  d.distrito, count(*) as total_requisicoes
@@ -396,9 +444,20 @@ FROM api.requisicao r
     left join api.colaborador_area ca on ca.colaborador = c.id
     left join api.area a on a.id = ca.area
     left join api.status s on s.id = gs.status
-    where gs.nr_guia is  null and a.area = area_name
-    group by d.distrito ) as req_novas
-
+    where  a.area =any(ARRAY[area_name]) and r.canceled = 'No'
+    group by d.distrito )  as total_req
+left join ( SELECT  d.distrito, count(*) as total_requisicoes
+FROM api.requisicao r
+    inner join api.material m on m.id = r.material
+    inner join api.unidade_sanitaria us on us.id = r.unidade_sanitaria
+    inner join api.colaborador c on c.id = r.requisitante
+    inner join api.distrito d on d.id = us.distrito
+    left join api.guia_saida gs on gs.id = r.nr_guia
+    left join api.colaborador_area ca on ca.colaborador = c.id
+    left join api.area a on a.id = ca.area
+    left join api.status s on s.id = gs.status
+    where gs.nr_guia is  null and a.area =any(ARRAY[area_name]) and r.canceled = 'No'
+    group by d.distrito ) as req_novas on req_novas.distrito = total_req.distrito
 left join (
 SELECT  d.distrito, count(*) as total_requisicoes
 FROM api.requisicao r
@@ -410,8 +469,8 @@ FROM api.requisicao r
     left join api.colaborador_area ca on ca.colaborador = c.id
     left join api.area a on a.id = ca.area
     left join api.status s on s.id = gs.status
-    where gs.nr_guia is not null and s.name ='NOVA' and a.area = area_name
-    group by d.distrito ) as req_processadas on req_processadas.distrito = req_novas.distrito
+    where gs.nr_guia is not null and s.name ='NOVA' and a.area =any(ARRAY[area_name]) and r.canceled = 'No'
+    group by d.distrito ) as req_processadas on req_processadas.distrito = total_req.distrito
 left join (
 SELECT  d.distrito, count(*) as total_requisicoes
 FROM api.requisicao r
@@ -423,12 +482,12 @@ FROM api.requisicao r
     left join api.colaborador_area ca on ca.colaborador = c.id
     left join api.area a on a.id = ca.area
     left join api.status s on s.id = gs.status
-    where gs.nr_guia is not null and s.name ='ENTREGUE' and a.area = area_name
-    group by d.distrito ) as req_completas on req_completas.distrito = req_novas.distrito;
+    where gs.nr_guia is not null and s.name ='ENTREGUE' and a.area =any(ARRAY[area_name]) and r.canceled = 'No'
+    group by d.distrito ) as req_completas on req_completas.distrito = total_req.distrito;
 END;
 $$ LANGUAGE plpgsql;
-grant execute on function api.fn_requisicoes_por_distrito(varchar) to web_anon;
-select * from fn_requisicoes_por_distrito('APSS');
+grant execute on function api.fn_requisicoes_por_distrito(varchar[]) to web_anon;
+select * from fn_requisicoes_por_distrito(ARRAY['APSS']);
 ----------------------------------------------------------------------
 -------------------------+ vw_requisicoes_by_distrito    +-----------------------------------------------------
 -- using the above code as template, create a view hat receives the area as the parameter and returns the total number
@@ -448,7 +507,7 @@ FROM api.requisicao r
     left join api.colaborador_area ca on ca.colaborador = c.id
     left join api.area a on a.id = ca.area
     left join api.status s on s.id = gs.status
-    where gs.nr_guia is  null
+    where gs.nr_guia is  null and r.canceled = 'No'
     group by d.distrito ) as req_novas
 
 left join (
@@ -462,7 +521,7 @@ FROM api.requisicao r
     left join api.colaborador_area ca on ca.colaborador = c.id
     left join api.area a on a.id = ca.area
     left join api.status s on s.id = gs.status
-    where gs.nr_guia is not null and s.name ='NOVA'
+    where gs.nr_guia is not null and s.name ='NOVA' and r.canceled = 'No'
     group by d.distrito ) as req_processadas on req_processadas.distrito = req_novas.distrito
 left join (
 SELECT  d.distrito, count(*) as total_requisicoes
@@ -475,7 +534,7 @@ FROM api.requisicao r
     left join api.colaborador_area ca on ca.colaborador = c.id
     left join api.area a on a.id = ca.area
     left join api.status s on s.id = gs.status
-    where gs.nr_guia is not null and s.name ='ENTREGUE'
+    where gs.nr_guia is not null and s.name ='ENTREGUE' and r.canceled = 'No'
     group by d.distrito ) as req_completas on req_completas.distrito = req_novas.distrito;
 
 grant select on  api.vw_requisicoes_by_distrito to web_anon;
@@ -573,13 +632,14 @@ grant execute on function api.sp_insert_armazem(varchar, varchar) to web_anon;
 -- the stored procedure must return the id
 drop function if exists api.sp_insert_colaborador(varchar, varchar, varchar, varchar, bigint, bigint, varchar, varchar);
 create or replace function api.sp_insert_colaborador(nome_colaborador varchar, emailaddress varchar, contacto_colaborador varchar,
-funcao_colaborador varchar, id_area bigint, id_role bigint, user_name varchar, pass varchar)
+funcao_colaborador varchar, ids_area bigint[], id_role bigint, user_name varchar, pass varchar)
  returns bigint
  language plpgsql
  as $$
 declare
     id_colaborador bigint;
     id_usuario bigint;
+    declare id_area bigint;
 begin
     -- first check if colaborador already exists
     if exists(select 1 from api.colaborador c where c.email = emailaddress) then
@@ -587,8 +647,12 @@ begin
     end if;
     -- insert colaborador
     insert into api.colaborador (nome, email, contacto,funcao) values (nome_colaborador, emailaddress, contacto_colaborador,funcao_colaborador) returning id into id_colaborador;
-    -- insert colaborador_area
-    insert into api.colaborador_area (colaborador, area) values (id_colaborador, id_area);
+    -- insert colaborador_area, note that the area is an array . so we need to loop through the array
+    FOREACH id_area IN ARRAY ids_area
+    LOOP
+        insert into api.colaborador_area (colaborador, area) values (id_colaborador, id_area);
+    END LOOP;
+
     -- insert usuario
     insert into api.usuario (username, password, colaborador) values (user_name, pass, id_colaborador) returning id into id_usuario;
     -- insert user_role
@@ -596,8 +660,8 @@ begin
     return id_colaborador;
 end; $$;
 
-alter function api.sp_insert_colaborador(varchar, varchar, varchar, varchar, bigint, bigint, varchar, varchar) owner to sidmat;
-grant execute on function api.sp_insert_colaborador(varchar, varchar, varchar, varchar, bigint, bigint, varchar, varchar) to web_anon;
+alter function api.sp_insert_colaborador(varchar, varchar, varchar, varchar, bigint[], bigint, varchar, varchar) owner to sidmat;
+grant execute on function api.sp_insert_colaborador(varchar, varchar, varchar, varchar, bigint[], bigint, varchar, varchar) to web_anon;
 ------------------------------------------------------------------------------------------------------
 -------------------------+ vw_all_colaboradores   +-----------------------------------------------------
 -- create a view that returns all colaboradores including the area and role

@@ -9,7 +9,7 @@ import Paper from '@mui/material/Paper';
 
 
   
-const MaterialGuiaFooter = ({ guiaSaida }) => {
+const MaterialGuiaFooter = (props) => {
 
     return(
       <div>
@@ -20,7 +20,7 @@ const MaterialGuiaFooter = ({ guiaSaida }) => {
           <TableHead>
             <TableRow>
             <TableCell align="right">           <div>
-           <p><br></br><br></br><br></br></p>
+           <p><br></br><br></br></p>
             </div>  
     </TableCell>
               <TableCell align="right">{"           "}</TableCell>
@@ -31,30 +31,30 @@ const MaterialGuiaFooter = ({ guiaSaida }) => {
           <TableBody>
               <TableRow >
         
-                <TableCell align="left"> <b>Mercadoria recebida e inspencionada por: </b></TableCell>
+                <TableCell align="left"> <b>Guia confirmada por: </b></TableCell>
                 <TableCell align="center">{"           "}</TableCell>
                 <TableCell align="center">{"           "}</TableCell>
                 <TableCell align="left"><b>Mercadoria Entregue por:</b></TableCell>
               </TableRow>
               <TableRow >
         
-                <TableCell align="left">{"           "}</TableCell>
+                <TableCell align="left">{props.confirmed?props.confirmed: ""}</TableCell>
                 <TableCell align="center">{"           "}</TableCell>
                 <TableCell align="center">{"           "}</TableCell>
-                <TableCell align="left"> <b>CCS MAPUTO  </b>       </TableCell>
+                <TableCell align="left"> {props.confirmed? props.driver: ""}   </TableCell>
               </TableRow>
               <TableRow >
         
                 <TableCell align = "left">Data:</TableCell>
                 <TableCell align = "center">{"           "}</TableCell>
                 <TableCell align = "center"> </TableCell>
-                <TableCell align = "left">	Assinatura (Legível)</TableCell>
+                <TableCell align = "left">	{"           "}</TableCell>
               </TableRow>
               
               <TableRow  >
         
                 <TableCell align="left">    <div>
-           <p><br></br><br></br><br></br><br></br></p>
+           <p><br></br></p>
             </div>  </TableCell>
                 <TableCell align="center">{"           "}</TableCell>
                 <TableCell align="center">{"           "}</TableCell>

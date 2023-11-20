@@ -68,6 +68,11 @@ export const  PedidosArea=() => {
       header: 'Unidade Sanitaria',
       size: 10,
     },
+    {
+      accessorKey: 'requisitante_nome',
+      header: 'Requisitante',
+      size: 60,
+    },
       {
         accessorKey: 'pf_nome',
         header: 'Nome PF',
@@ -78,11 +83,7 @@ export const  PedidosArea=() => {
       header: 'Contacto PF',
       size: 10,
     },
-    {
-      accessorKey: 'requisitante_nome',
-      header: 'Nome do Requisitante',
-      size: 60,
-    },
+
   {
     accessorKey: 'notas',
     header: 'Notas',

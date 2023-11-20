@@ -19,7 +19,7 @@ import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
-import {listRequisicoesByGuia,updateGuia} from "../../middleware/GuiaService.js";
+import {listRequisicoesByGuia,updateGuia,getGuiaSaida} from "../../middleware/GuiaService.js";
 import { wait } from "@testing-library/user-event/dist/utils/index.js";
 import  exportData from "../../Reporting/SheetJs.jsx";
 import {VisualizarGuiSaida} from "../../Reporting/GuiaTemplate.js";
@@ -40,12 +40,15 @@ export const  VisualizarGuia=() => {
   const [motoristas, setMotoristas] = useState();
   const [listMotoristas,setListMotoristas] =  useState([]);
   const [selectedMotorista, setSelectedMotorista] = useState(null);
-  let newMotorista = null;
+  const [guiaSaida, setGuiaSaida] = useState();
 
+  let newMotorista = null;
+  
+  let counter = 0;
   let list_motoristas = [];
   let estado = null;
   const location = useLocation();
-  let guiaSaida = [];
+  // let guiaSaida = [];
   let nrGuia = "";
   let tempSessionGuiaSaida = [];
   let tempSessionNrGuia =[];
@@ -57,7 +60,7 @@ estado = location.state ? location.state : null;
 tempSessionGuiaSaida = estado ? estado.requisicoes : null;
 tempSessionNrGuia = estado ? estado.tempNrGuia : null;
 
-guiaSaida= tempSessionGuiaSaida[0];
+let tmpguiaSaida= tempSessionGuiaSaida[0];
 nrGuia = tempSessionNrGuia;
 // transfor guiaSaida to an json array
 
@@ -80,10 +83,6 @@ useEffect(() => {
         .then((response) => {
             setRequisicoesDaGuia(response);
             setLoadingRequisicoesGuia(true);
-            if(response[0].status==="ENTREGUE"){
-              // show a notification that this guia was already delivered
-              NotificationManager.info('Esta Guia ' + nrGuia + ' ja foi entregue!','Guia Entregue', 5000);
-            }
             })
         .catch( error => {
                 // handle any error state, rejected promises, etc ...
@@ -92,7 +91,7 @@ useEffect(() => {
             } );
     }
 
-}, []);
+}, [nrGuia]);
 
   //get all  motoristas 
   useEffect(() => {
@@ -129,6 +128,24 @@ useEffect(() => {
     });
   
   }, [requisicoesDaGuia]);
+
+  // get guiaSaida  from the rest api using the nrGuia
+    
+  useEffect(() => {
+    if(nrGuia){
+      getGuiaSaida(nrGuia)
+      .then((response) => {
+        setGuiaSaida(response);
+      })
+      .catch( error => {
+        // handle any error state, rejected promises, etc ...
+        NotificationManager.error('Houve erro ao carregar a guia {'+ nrGuia + '}', 'Erro!', 8000);
+        setErrorLoadingRequisicoes(error);
+      } );
+    }
+  }, [nrGuia]);
+
+
 
 const fetchResultUpdateGuia = async (json) => {
 
@@ -202,7 +219,7 @@ const handleConfirmar = async () =>  {
     return <Navigate to="/auth/login" />;
   }
 
-  if(!requisicoesDaGuia || !motoristas){
+  if(!requisicoesDaGuia || !motoristas || !guiaSaida){
     return (
       <>
             <main className="h-full">
@@ -233,7 +250,12 @@ const handleConfirmar = async () =>  {
 
   }  else {
 
-
+                      // if guiaSaida is confirmed, show a noftification and disable the confirmar button
+                      if(guiaSaida.confirmedby && counter === 0){
+                        NotificationManager.info('Esta Guia de Saida ja foi entregue...','Guia de Saida Confirmada', 8000);
+                        // setEnableConfirmar(true);
+                        counter++;
+                      }
 
   return (
     <>
@@ -253,9 +275,9 @@ const handleConfirmar = async () =>  {
             {/* Create a div with a fixed width. and render  <MaterialGuia rows={materiaisGuia}/>  */}
             <div className="flexjustify-down items-down h-screen">
             <div className="w-[950px]">
-            <MaterialGuiaHeader  user={userData[0].nome }  nr_guia={nrGuia} data_entrega={requisicoesDaGuia[0].data_entrega}/>
+            <MaterialGuiaHeader  creator={guiaSaida[0].createdby}  user={userData[0].nome }  nr_guia={nrGuia} data_entrega={requisicoesDaGuia[0].data_entrega? requisicoesDaGuia[0].data_entrega: ""}/>
             <MaterialGuia rows={requisicoesDaGuia}/>
-            <MaterialGuiaFooter guiaSaida={requisicoesDaGuia}/>
+            <MaterialGuiaFooter confirmed={guiaSaida[0].confirmedby}  driver={requisicoesDaGuia[0].motorista }/>
             
             <TableContainer component={Paper}>
             <Table sx={{ minWidth: 350 }} size="small" aria-label="a dense table">

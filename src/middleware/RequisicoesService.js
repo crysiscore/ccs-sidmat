@@ -18,10 +18,40 @@ export async function createRequisicao(data) {
     
 }
 // create a funcion to get requisicoes by user_id and the canceled staus is No
-export async function getRequisicoesByUser(id) {
+export async function getRequisicoesByUser(area) {
     try{
-        const response = await api.get('/vw_my_requisicao?requisitante_id=eq.' + id + '&canceled=eq.No');
-        return await response.data;
+        let allAreas = "";
+        if(area.length> 1 ){
+          let tempArea =area;
+                    tempArea.forEach((area, index) => {
+                      allAreas += `"${area}"`;
+                      if (index !== tempArea.length - 1) {
+                        allAreas += ',';
+                      }
+                    });
+    
+             allAreas = allAreas.replace(/&/g, '%26');
+             const response = await api.get('/vw_my_requisicao?area=in.(' + allAreas + ')');
+             return  response.data;
+                  } else {
+  
+                    let tempArea =area[0];
+                    // if tempArea contains special character & replace it with  '%26'
+                    if (tempArea.includes('&')) {
+                        tempArea = tempArea.replace(/&/g, '%26');
+                      } 
+                      const response = await api.get('/vw_my_requisicao?area=eq.' + tempArea);
+                      return await response.data;
+  
+  
+                  }
+/*         let tempArea =area;
+        // if tempArea contains special character & replace it with  '%26'
+        if (tempArea.includes('&')) {
+            tempArea = tempArea.replace(/&/g, '%26');
+          } 
+        const response = await api.get('/vw_my_requisicao?area=eq.' + tempArea + '&canceled=eq.No');
+        return await response.data; */
     }catch(error) {
         throw error;
     }
@@ -50,7 +80,7 @@ export async function getRequisicoesByArea(area) {
 export async function getAllRequisicoes() {
     try{
         const response = await api.get('/vw_requisicoes_pendentes?canceled=eq.No');
-        return await response.data;
+        return  response.data;
     }catch(error) {
         throw error;
     }
@@ -61,7 +91,7 @@ export async function getAllRequisicoes() {
 export async function getRequisicoesPendentesArea() {
     try{
         const response = await api.get('/vw_sumario_requisicoes_pendentes');
-        return await response.data;
+        return  response.data;
     }catch(error) {
         throw error;
     }

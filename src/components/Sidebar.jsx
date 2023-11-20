@@ -50,7 +50,7 @@ function Sidebar(...props) {
   return (
     <aside className="hidden lg:block">
       <div className="md:w-64 min-h-full border-r-2 px-2 py-2 border-gray-100 flex-col flex flex-shrink-0">
-        <div className="font-semibold text-3xl items-center text-green-700 px-4 py-6">
+        <div className="font-semibold text-3xl items-center text-blue-700 px-4 py-6">
           <FontAwesomeIcon icon={faTruckFast}></FontAwesomeIcon> bGreens
         </div>
 
@@ -63,7 +63,7 @@ function Sidebar(...props) {
             id=""
             onChange={handleChange}
             ref={search}
-            className="border-b text-sm w-full px-3 py-2 focus:outline-none focus:border-green-400"
+            className="border-b text-sm w-full px-3 py-2 focus:outline-none focus:border-blue-400"
           />
 
           {!scButton && (
@@ -106,7 +106,7 @@ function Sidebar(...props) {
         <div className="text-sm">
           <div className="flex items-center space-x-2 border-b border-gray-300 py-4 mb-3">
             <img
-              className="w-16 border border-green-500 p-1 rounded"
+              className="w-16 border border-blue-500 p-1 rounded"
               src="https://www.gravatar.com/avatar/205e460b479e2e5b48aec07710c08d50"
               alt="Profile"
             />
@@ -118,7 +118,7 @@ function Sidebar(...props) {
           </div>
 
           {/* Logout Button */}
-          <button className="py-2 px-4 border border-emerald-500 bg-emerald-700 w-full rounded text-gray-200 hover:bg-emerald-600 hover:border-emerald-600 justify-end">
+          <button className="py-2 px-4 border border-blue-500 bg-blue-700 w-full rounded text-gray-200 hover:bg-blue-600 hover:border-blue-600 justify-end">
             <FontAwesomeIcon icon={faSignOut}></FontAwesomeIcon> Sair
           </button>
         </div>

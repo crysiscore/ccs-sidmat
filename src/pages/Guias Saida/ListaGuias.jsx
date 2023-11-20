@@ -15,6 +15,7 @@ import TabPanel from '@mui/lab/TabPanel';
 import { getAllRequisicoes } from "../../middleware/RequisicoesService.js";
 import { GuiasPorAreaTable } from "../../components/Datatables/CustomTable.jsx";
 import { listGuiasByArea } from "../../middleware/GuiaService.js";
+import { user } from "@nextui-org/react";
 
 const avatar =
 "https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80";
@@ -90,7 +91,17 @@ export const  ListaGuias=(props) => {
     {
       accessorKey: 'foto_id',
       header: 'Link Da foto',
-      size: 60,
+      size: 10,
+    },
+    {
+      accessorKey: 'createdby',
+      header: 'Criado por',
+      size: 10,
+    },
+    {
+      accessorKey: 'confirmedby',
+      header: 'Confirmado por',
+      size: 10,
     }
   ];
 
@@ -106,12 +117,34 @@ export const  ListaGuias=(props) => {
   userData = sessionData ? JSON.parse(sessionData) : null; // Parse the retrieved data
  let userRole = userData[0].role;
  let userArea = "";
+ let allAreas = "";
 
  if (userRole === "Logistica") {
   userArea ="all";
-} else if (userRole === "Requisitante") {
-  userArea=userData[0].area;
-}
+  userArea = [userArea];
+} else if (userRole === "Requisitante" && userData.length > 1) {
+ // for all objects in userData get their area and store in userArea
+ userArea = userData.map((item) => item.area);
+ let tempArea =userArea;
+
+ tempArea.forEach((area, index) => {
+   allAreas += `[${area}]`;
+   if (index !== tempArea.length - 1) {
+     allAreas += ',';
+   }
+ });
+
+ 
+  } else if (userRole === "Administrador") {
+   userArea ="all";
+   allAreas = userArea;
+  } else if (userRole === "Requisitante" && userData.length === 1) {
+ 
+   userArea = userData[0].area;
+   // make userArea an array
+   userArea = [userArea];
+   allAreas = userArea;
+   }
   //get all Guias de Saida
 useEffect(() => {
     listGuiasByArea(userArea) 

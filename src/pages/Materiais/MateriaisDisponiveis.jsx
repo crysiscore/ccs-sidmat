@@ -9,6 +9,7 @@ import { NotificationManager} from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
 import { Navigate } from 'react-router-dom';
 import DashboardHeader from "../../components/Other/DashboardHeader.jsx";
+import { all } from "axios";
 
 
 
@@ -37,8 +38,36 @@ function TableMateriaisDisponivel() {
   let userData = [];
   userData = sessionData ? JSON.parse(sessionData) : null; // Parse the retrieved data
 
-  //get area property from userData
-  const area = userData ? userData[0].area : null; // Parse the retrieved data
+
+  let userRole = userData[0].role;
+  let userArea = "";
+  let allAreas = "";
+
+  if (userRole === "Logistica") {
+   userArea ="all";
+ } else if (userRole === "Requisitante" && userData.length > 1) {
+   // for all objects in userData get their area and store in userArea
+    userArea = userData.map((item) => item.area);
+ let tempArea =userArea;
+
+     tempArea.forEach((area, index) => {
+       allAreas += `[${area}]`;
+       if (index !== tempArea.length - 1) {
+         allAreas += ',';
+       }
+     });
+
+ } else if (userRole === "Administrador") {
+  userArea ="all";
+  allAreas = userArea;
+ } else if (userRole === "Requisitante" && userData.length === 1) {
+
+  userArea = userData[0].area;
+  // make userArea an array
+  userArea = [userArea];
+  allAreas = userArea;
+  }
+
 
 
   const columnNames = [
@@ -91,7 +120,7 @@ function TableMateriaisDisponivel() {
 
 //get Material by area
 useEffect(() => {
-  getMaterialDisponivel(area) 
+  getMaterialDisponivel(userArea) 
     .then(materialList => { 
       setData(materialList)
       setHasFinishedLoading(true);
@@ -140,7 +169,7 @@ useEffect(() => {
 
 <div className="px-2 mx-auto mainCard">
         <h1 className="text-slate-500 pb-3 text-base md:text-lg">
-          Lista de Materiais para {area}: 
+          Lista de Materiais para {allAreas}: 
         </h1>
 
         {/* <div className="flex flex-row gap-x-4 overflow-hidden overflow-y-auto justify-between "> */}
@@ -171,7 +200,7 @@ useEffect(() => {
 
 <div className="px-2 mx-auto mainCard">
         <h1 className="text-slate-500 pb-3 text-base md:text-lg">
-          Lista de Materiais para {area}:
+          Lista de Materiais para {allAreas}:
         </h1>
    {/* <div className="flex flex-row gap-x-4 overflow-hidden overflow-y-auto justify-between "> */}
    <div className=" gap-y-4 overflow-hidden overflow-y-auto center wrapper-requisicoes ">
@@ -200,7 +229,7 @@ useEffect(() => {
                 />
                 <div className="px-2 mx-auto mainCard">
                   <h1 className="text-slate-500 pb-3 text-base md:text-lg">
-                  Lista de Materiais para {area}: 
+                  Lista de Materiais para {allAreas}: 
                   </h1>
            
                   {/* <div className="flex flex-row gap-x-4 overflow-hidden overflow-y-auto justify-between "> */}
@@ -235,7 +264,7 @@ useEffect(() => {
                 />
                 <div className="px-2 mx-auto mainCard">
                   <h1 className="text-slate-500 pb-3 text-base md:text-lg">
-                  Lista de Materiais para {area}:
+                  Lista de Materiais para {allAreas}:
                   </h1>
            
                   {/* <div className="flex flex-row gap-x-4 overflow-hidden overflow-y-auto justify-between "> */}

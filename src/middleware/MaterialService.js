@@ -20,13 +20,32 @@ const api = axios.create({
 export async function getMaterialDisponivel(area) {
 
     try{
-      let tempArea =area;
-      // if tempArea contains special character & replace it with  '%26'
-      if (tempArea.includes('&')) {
-          tempArea = tempArea.replace(/&/g, '%26');
-        } 
-        const response = await api.get('/vw_material_disponivel?qtd_stock=gt.0&area=eq.' + tempArea);
-        return await response.data;
+      let allAreas = "";
+      if(area.length> 1 ){
+        let tempArea =area;
+                  tempArea.forEach((area, index) => {
+                    allAreas += `"${area}"`;
+                    if (index !== tempArea.length - 1) {
+                      allAreas += ',';
+                    }
+                  });
+  
+           allAreas = allAreas.replace(/&/g, '%26');
+           const response = await api.get('/vw_material_disponivel?area=in.(' + allAreas + ')');
+           return  response.data;
+                } else {
+
+                  let tempArea =area[0];
+                  // if tempArea contains special character & replace it with  '%26'
+                  if (tempArea.includes('&')) {
+                      tempArea = tempArea.replace(/&/g, '%26');
+                    } 
+                    const response = await api.get('/vw_material_disponivel?area=eq.' + tempArea);
+                    return await response.data;
+
+
+                }
+
     }catch(error) {
         throw error;
     }
