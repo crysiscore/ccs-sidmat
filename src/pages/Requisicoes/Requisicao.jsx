@@ -2004,7 +2004,9 @@ const handleSaveRow =  ({ exitEditingMode, row, values }) => {
                 data={requisicoes}
                 initialState={{
                   columnVisibility: { id: false,material: false,requisitante: false ,us:false},
-                  density: 'compact'
+                  density: 'compact',
+                  pagination: { pageSize: 20, pageIndex: 0 }
+
                   }}
                   editingMode="row"
                   enableEditing
