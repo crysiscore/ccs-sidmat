@@ -113,41 +113,24 @@ const unidadesSanitariasObject = [
   { value: 54, label: "ESCOLA COMUNITARIA DA POLANA", checked: false },
   { value: 55, label: "ESCOLA SECUNDARIA SANTO ANTONIO DA POLANA", checked: false },
 
+  { value: 56, label: "CS Chiango", checked: false },
+  { value: 57, label: "PS 3 de Fevereiro", checked: false },
+  { value: 58, label: "CS Base aerea Mavalane", checked: false },
+  { value: 59, label: "CS Nº 14", checked: false },
+  { value: 60, label: "CS Mutsekua", checked: false },
+  //  { value: 61, label: "HM Maputo", checked: false },
+  { value: 62, label: "HM Maputo", checked: false },
+  { value: 63, label: "PS Cadeia Civil", checked: false },
+  { value: 64, label: "PS Assembleia da Republica", checked: false },
+  { value: 65, label: "PS Nº 2 Tribunal (PRM)", checked: false },
+  { value: 66, label: "H. Privado Marinha de Guerra", checked: false },
+  { value: 67, label: "Centro Para a crianca", checked: false },
+  { value: 68, label: "Clinica UEM", checked: false },
+  { value: 69, label: "Dream", checked: false },
+  
 ];
 
 
-const checkboxMap = {
-  dictionary: new Map([
-    ['1', 'false'],
-    ['2', 'false'],
-    ['3', 'false'],
-    ['4', 'false'],
-    ['5', 'false'],
-    ['6', 'false'],
-    ['7', 'false'],
-    ['8', 'false'],
-    ['9', 'false'],
-    ['10', 'false'],
-    ['11', 'false'],
-    ['12', 'false'],
-    ['13', 'false'],
-    ['14', 'false'],
-    ['15', 'false'],
-    ['16', 'false'],
-    ['17', 'false'],
-    ['18', 'false'],
-    ['19', 'false'],
-    ['20', 'false'],
-    ['21', 'false'],
-    ['22', 'false'],
-    ['23', 'false'],
-    ['24', 'false'],
-    ['25', 'false'],
-    ['26', 'false'],
-    ['27', 'false'],
-    ['28', 'false']
-  ])
-};
 // Parse unidadesSanitariasObject to JSON
 //const unidadesSanitarias = JSON.parse(JSON.stringify(unidadesSanitariasObject));
 
@@ -202,8 +185,7 @@ function NovaRequisicao() {
   const [checked26, setChecked26] = React.useState(false);
   const [checked27, setChecked27] = React.useState(false);
   const [checked28, setChecked28] = React.useState(false);
-  //const [checked29, setChecked29] = React.useState(false);
- /* Create checked40  up to 56 */
+  /* create checked40 up to 56 */
   const [checked40, setChecked40] = React.useState(false);
   const [checked41, setChecked41] = React.useState(false);
   const [checked42, setChecked42] = React.useState(false);
@@ -220,6 +202,23 @@ function NovaRequisicao() {
   const [checked53, setChecked53] = React.useState(false);
   const [checked54, setChecked54] = React.useState(false);
   const [checked55, setChecked55] = React.useState(false);
+
+  const [checked56, setChecked56] = React.useState(false);
+  const [checked57, setChecked57] = React.useState(false);
+  const [checked58, setChecked58] = React.useState(false);
+  const [checked59, setChecked59] = React.useState(false);
+  const [checked60, setChecked60] = React.useState(false);
+  const [checked61, setChecked61] = React.useState(false);
+  const [checked62, setChecked62] = React.useState(false);
+  const [checked63, setChecked63] = React.useState(false);
+  const [checked64, setChecked64] = React.useState(false);
+  const [checked65, setChecked65] = React.useState(false);
+  const [checked66, setChecked66] = React.useState(false);
+  const [checked67, setChecked67] = React.useState(false);
+  const [checked68, setChecked68] = React.useState(false);
+  const [checked69, setChecked69] = React.useState(false);
+
+
 
 
   let selectedUnidadesSanitarias = [];
@@ -845,7 +844,7 @@ function NovaRequisicao() {
     // set selectedUnidadesSanitarias to selected
     handleSetSelected(value);
   }
-  
+
   const handleChange51 = (event) => {
     const value = event.target.value;
     const label = event.target.labels[0].innerText;
@@ -861,15 +860,14 @@ function NovaRequisicao() {
     // set selectedUnidadesSanitarias to selected
     handleSetSelected(value);
   }
-
   const handleChange52 = (event) => {
     const value = event.target.value;
     const label = event.target.labels[0].innerText;
     const checked = event.target.checked;
-    
+
     setChecked52( event.target.checked);
     NotificationManager.info(" US: " +label + " checked: " +checked , 'Info', 2000);
-    if(checked){ 
+    if(checked){
       addSelectedUS(value);
     }else{
       removeSelectedUS(value);
@@ -877,15 +875,15 @@ function NovaRequisicao() {
     // set selectedUnidadesSanitarias to selected
     handleSetSelected(value);
   }
-
+  
   const handleChange53 = (event) => {
     const value = event.target.value;
     const label = event.target.labels[0].innerText;
     const checked = event.target.checked;
-    
+
     setChecked53( event.target.checked);
     NotificationManager.info(" US: " +label + " checked: " +checked , 'Info', 2000);
-    if(checked){ 
+    if(checked){
       addSelectedUS(value);
     }else{
       removeSelectedUS(value);
@@ -893,15 +891,15 @@ function NovaRequisicao() {
     // set selectedUnidadesSanitarias to selected
     handleSetSelected(value);
   }
-
+  
   const handleChange54 = (event) => {
     const value = event.target.value;
     const label = event.target.labels[0].innerText;
     const checked = event.target.checked;
-    
+
     setChecked54( event.target.checked);
     NotificationManager.info(" US: " +label + " checked: " +checked , 'Info', 2000);
-    if(checked){ 
+    if(checked){
       addSelectedUS(value);
     }else{
       removeSelectedUS(value);
@@ -909,15 +907,15 @@ function NovaRequisicao() {
     // set selectedUnidadesSanitarias to selected
     handleSetSelected(value);
   }
-
+  
   const handleChange55 = (event) => {
     const value = event.target.value;
     const label = event.target.labels[0].innerText;
     const checked = event.target.checked;
-    
+
     setChecked55( event.target.checked);
     NotificationManager.info(" US: " +label + " checked: " +checked , 'Info', 2000);
-    if(checked){ 
+    if(checked){
       addSelectedUS(value);
     }else{
       removeSelectedUS(value);
@@ -925,7 +923,230 @@ function NovaRequisicao() {
     // set selectedUnidadesSanitarias to selected
     handleSetSelected(value);
   }
+  
+    const handleChange56 = (event) => {
+      const value = event.target.value;
+      const label = event.target.labels[0].innerText;
+      const checked = event.target.checked;
+      
+      setChecked56(event.target.checked);
+      NotificationManager.info(" US: " + label + " checked: " + checked, 'Info', 2000);
+      if (checked) {
+        addSelectedUS(value);
+      } else {
+        removeSelectedUS(value);
+      }
+      // set selectedUnidadesSanitarias to selected
+      handleSetSelected(value);
+    }
 
+    const handleChange57 = (event) => {
+      const value = event.target.value;
+      const label = event.target.labels[0].innerText;
+      const checked = event.target.checked;
+      
+      setChecked57(event.target.checked);
+      NotificationManager.info(" US: " + label + " checked: " + checked, 'Info', 2000);
+      if (checked) {
+        addSelectedUS(value);
+      } else {
+        removeSelectedUS(value);
+      }
+      // set selectedUnidadesSanitarias to selected
+      handleSetSelected(value);
+    }
+
+    const handleChange58 = (event) => {
+      const value = event.target.value;
+      const label = event.target.labels[0].innerText;
+      const checked = event.target.checked;
+      
+      setChecked58(event.target.checked);
+      NotificationManager.info(" US: " + label + " checked: " + checked, 'Info', 2000);
+      if (checked) {
+        addSelectedUS(value);
+      } else {
+        removeSelectedUS(value);
+      }
+      // set selectedUnidadesSanitarias to selected
+      handleSetSelected(value);
+    }
+
+    const handleChange59 = (event) => {
+      const value = event.target.value;
+      const label = event.target.labels[0].innerText;
+      const checked = event.target.checked;
+      
+      setChecked59(event.target.checked);
+      NotificationManager.info(" US: " + label + " checked: " + checked, 'Info', 2000);
+      if (checked) {
+        addSelectedUS(value);
+      } else {
+        removeSelectedUS(value);
+      }
+      // set selectedUnidadesSanitarias to selected
+      handleSetSelected(value);
+    }
+
+    const handleChange60 = (event) => {
+      const value = event.target.value;
+      const label = event.target.labels[0].innerText;
+      const checked = event.target.checked;
+      
+      setChecked60(event.target.checked);
+      NotificationManager.info(" US: " + label + " checked: " + checked, 'Info', 2000);
+      if (checked) {
+        addSelectedUS(value);
+      } else {
+        removeSelectedUS(value);
+      }
+      // set selectedUnidadesSanitarias to selected
+      handleSetSelected(value);
+    }
+
+    const handleChange61 = (event) => {
+      const value = event.target.value;
+      const label = event.target.labels[0].innerText;
+      const checked = event.target.checked;
+      
+      setChecked61(event.target.checked);
+      NotificationManager.info(" US: " + label + " checked: " + checked, 'Info', 2000);
+      if (checked) {
+        addSelectedUS(value);
+      } else {
+        removeSelectedUS(value);
+      }
+      // set selectedUnidadesSanitarias to selected
+      handleSetSelected(value);
+    }
+
+    const handleChange62 = (event) => {
+      const value = event.target.value;
+      const label = event.target.labels[0].innerText;
+      const checked = event.target.checked;
+      
+      setChecked62(event.target.checked);
+      NotificationManager.info(" US: " + label + " checked: " + checked, 'Info', 2000);
+      if (checked) {
+        addSelectedUS(value);
+      } else {
+        removeSelectedUS(value);
+      }
+      // set selectedUnidadesSanitarias to selected
+      handleSetSelected(value);
+    }
+
+    const handleChange63 = (event) => {
+      const value = event.target.value;
+      const label = event.target.labels[0].innerText;
+      const checked = event.target.checked;
+      
+      setChecked63(event.target.checked);
+      NotificationManager.info(" US: " + label + " checked: " + checked, 'Info', 2000);
+      if (checked) {
+        addSelectedUS(value);
+      } else {
+        removeSelectedUS(value);
+      }
+      // set selectedUnidadesSanitarias to selected
+      handleSetSelected(value);
+    }
+
+    const handleChange64 = (event) => {
+      const value = event.target.value;
+      const label = event.target.labels[0].innerText;
+      const checked = event.target.checked;
+      
+      setChecked64(event.target.checked);
+      NotificationManager.info(" US: " + label + " checked: " + checked, 'Info', 2000);
+      if (checked) {
+        addSelectedUS(value);
+      } else {
+        removeSelectedUS(value);
+      }
+      // set selectedUnidadesSanitarias to selected
+      handleSetSelected(value);
+    }
+
+    const handleChange65 = (event) => {
+      const value = event.target.value;
+      const label = event.target.labels[0].innerText;
+      const checked = event.target.checked;
+      
+      setChecked65(event.target.checked);
+      NotificationManager.info(" US: " + label + " checked: " + checked, 'Info', 2000);
+      if (checked) {
+        addSelectedUS(value);
+      } else {
+        removeSelectedUS(value);
+      }
+      // set selectedUnidadesSanitarias to selected
+      handleSetSelected(value);
+    }
+
+    const handleChange66 = (event) => {
+      const value = event.target.value;
+      const label = event.target.labels[0].innerText;
+      const checked = event.target.checked;
+      
+      setChecked66(event.target.checked);
+      NotificationManager.info(" US: " + label + " checked: " + checked, 'Info', 2000);
+      if (checked) {
+        addSelectedUS(value);
+      } else {
+        removeSelectedUS(value);
+      }
+      // set selectedUnidadesSanitarias to selected
+      handleSetSelected(value);
+    }
+
+    const handleChange67 = (event) => {
+      const value = event.target.value;
+      const label = event.target.labels[0].innerText;
+      const checked = event.target.checked;
+      
+      setChecked67(event.target.checked);
+      NotificationManager.info(" US: " + label + " checked: " + checked, 'Info', 2000);
+      if (checked) {
+        addSelectedUS(value);
+      } else {
+        removeSelectedUS(value);
+      }
+      // set selectedUnidadesSanitarias to selected
+      handleSetSelected(value);
+    }
+
+    const handleChange68 = (event) => {
+      const value = event.target.value;
+      const label = event.target.labels[0].innerText;
+      const checked = event.target.checked;
+      
+      setChecked68(event.target.checked);
+      NotificationManager.info(" US: " + label + " checked: " + checked, 'Info', 2000);
+      if (checked) {
+        addSelectedUS(value);
+      } else {
+        removeSelectedUS(value);
+      }
+      // set selectedUnidadesSanitarias to selected
+      handleSetSelected(value);
+    }
+
+    const handleChange69 = (event) => {
+      const value = event.target.value;
+      const label = event.target.labels[0].innerText;
+      const checked = event.target.checked;
+      
+      setChecked69(event.target.checked);
+      NotificationManager.info(" US: " + label + " checked: " + checked, 'Info', 2000);
+      if (checked) {
+        addSelectedUS(value);
+      } else {
+        removeSelectedUS(value);
+      }
+      // set selectedUnidadesSanitarias to selected
+      handleSetSelected(value);
+    }
 
 
 
@@ -970,6 +1191,21 @@ function NovaRequisicao() {
         value="7"
         control={<Checkbox checked={checked7} onChange={handleChange7} />}
       />
+        <FormControlLabel
+        label="CS Chiango"
+        value="56"
+        control={<Checkbox checked={checked56} onChange={handleChange56} />}
+      />
+        <FormControlLabel
+        label="PS 3 de Fevereiro"
+        value="57"
+        control={<Checkbox checked={checked57} onChange={handleChange57} />}
+      />
+        <FormControlLabel
+        label="CS Base aerea Mavalane"
+        value="58"
+        control={<Checkbox checked={checked58} onChange={handleChange58} />}
+      />
          <FormControlLabel
         label="OCB – Kuyakana"
         value="40"
@@ -997,6 +1233,11 @@ function NovaRequisicao() {
         label="Polana Caniço CS II"
         value="9"
         control={<Checkbox checked={checked9} onChange={handleChange9} />}
+      />
+         < FormControlLabel
+        label="Clinica UEM"
+        value="68"
+        control={<Checkbox checked={checked68} onChange={handleChange68} />}
       />
         < FormControlLabel
         label="OCB-KUTENGA"
@@ -1040,7 +1281,36 @@ function NovaRequisicao() {
         value="15"
         control={<Checkbox checked={checked15} onChange={handleChange15} />}
       />
-
+      < FormControlLabel
+      label="PS Cadeia Civil"
+      value="63"
+      control={<Checkbox checked={checked63} onChange={handleChange63} />}
+      />
+     < FormControlLabel
+        label="PS Assembleia da Republica"
+        value="64"
+        control={<Checkbox checked={checked64} onChange={handleChange64} />}
+      />
+      < FormControlLabel
+        label="PS Tribinal N2 (PRM)"
+        value="65"
+        control={<Checkbox checked={checked65} onChange={handleChange65} />}
+      />
+      < FormControlLabel
+        label="H. Privado Marinha de Guerra"
+        value="66"
+        control={<Checkbox checked={checked66} onChange={handleChange66} />}
+      />
+      < FormControlLabel
+        label="Centro Para a Crianca"
+        value="67"
+        control={<Checkbox checked={checked67} onChange={handleChange67} />}
+      />
+  < FormControlLabel
+        label="HM Maputo"
+        value="62"
+        control={<Checkbox checked={checked62} onChange={handleChange62} />}
+      />
        < FormControlLabel
         label="DEPOSITO DE MEDICAMENTOS"
         value="48"
@@ -1105,6 +1375,11 @@ function NovaRequisicao() {
         value="46"
         control={<Checkbox checked={checked46} onChange={handleChange46} />}
       />
+           < FormControlLabel
+        label="Dream"
+        value="69"
+        control={<Checkbox checked={checked69} onChange={handleChange69} />}
+      />
      </Box>);
 
   const katembe = (
@@ -1132,6 +1407,11 @@ function NovaRequisicao() {
         value="45"
         control={<Checkbox checked={checked45} onChange={handleChange45} />}
       />
+             < FormControlLabel
+        label="CS Mutsekua"
+        value="60"
+        control={<Checkbox checked={checked60} onChange={handleChange60} />}
+      />
       </Box>);
 
   const nlhamankulu = (
@@ -1158,6 +1438,11 @@ function NovaRequisicao() {
         label="Xipamanine CSURB"
         value="28"
         control={<Checkbox checked={checked28} onChange={handleChange28} />}
+      />
+       < FormControlLabel
+        label="CS Nº 14"
+        value="59"
+        control={<Checkbox checked={checked59} onChange={handleChange59} />}
       />
        < FormControlLabel  
         label="OCB-ASCODECHA"
