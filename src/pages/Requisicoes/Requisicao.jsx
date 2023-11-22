@@ -1609,8 +1609,9 @@ const handleSaveRow =  ({ exitEditingMode, row, values }) => {
             {materialRequisicao.length>0 ? <span> <div className="border w-full border-gray-200 bg-white py-4 px-6 rounded-md us-header ">
                 <p>Selecione os destinos para onde prentende distribuir o Material: </p>
 {/* 
-              <div className="flex w-full max-w-xs flex-col gap-2"> */}
-            <div className="flex destino-distritos">
+              <div className="inline-grid  grid-cols-4 destino-distritos"> */}
+
+            <div className="inline-flex  ">
              <div>
              <FormControlLabel
                 label="Kamavota"
@@ -1665,6 +1666,9 @@ const handleSaveRow =  ({ exitEditingMode, row, values }) => {
               {kamaxakeni}
             </div>
             <Spacer x={2} />
+           
+            </div>
+            <div className="inline-flex  ">
             <div>
             <FormControlLabel
                 label="Katembe/Kanyaka"
@@ -1678,9 +1682,21 @@ const handleSaveRow =  ({ exitEditingMode, row, values }) => {
               {katembe}
             </div>
             
-            </div>
             <Spacer x={2} />
             <div>
+            <FormControlLabel
+                label="Kalhamanculo"
+                control={
+                  <Checkbox
+                  checked={false }
+                  indeterminate={false}
+                  />
+                }
+              />
+              {nlhamankulu}
+            </div>
+            <Spacer x={2} />
+            <div> 
             <FormControlLabel
                 label="Outros Destinos"
                 control={
@@ -1692,10 +1708,11 @@ const handleSaveRow =  ({ exitEditingMode, row, values }) => {
               />
               {outrosDestinos}
             </div>
-            <Spacer y={1} />
-              <span>US Selecionadas: {selected.length}</span>
+            <Spacer y={2} />
+              </div>
                     
             </div>
+            <span>US Selecionadas: {selected.length}</span>
             <div className="border w-full border-gray-200 bg-white py-4 px-6 rounded-md ">
             <MaterialReactTable  
                 columns={columnNamesUSDistribuicao}
