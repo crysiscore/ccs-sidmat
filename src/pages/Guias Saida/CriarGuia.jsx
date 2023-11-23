@@ -59,6 +59,8 @@ export const  NovaGuia=() => {
   let list_motoristas = [];
 // Parse the retrieved data
 estado = location.state ? location.state : null; 
+materiaisGuia = estado.requisicoesSelecionadas;
+// materiaisGuia = estado.materiasRequisitados;
 
   const columnNamesPedidosArea = [
 
@@ -310,7 +312,6 @@ const handleImprimirGuia = () => {}
 
   }  else {
 
-    materiaisGuia = estado.requisicoesSelecionadas;
 
 
       //TODO Fix this should be done in the return statement

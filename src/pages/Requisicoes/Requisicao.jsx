@@ -1737,30 +1737,58 @@ const handleSaveRow =  ({ exitEditingMode, row, values }) => {
    // get the original row object
     const originalRequisicao = row.original;
     const constidUSModifiedReq = originalRequisicao.us;
-
+    const valuesCached = row._valuesCache;
     // get values from edited object
     const phoneRegex = /^\d{9}$/;
     const phoneNumber = values.pf_contacto;
     const quantidade = values.quantidade;
   // access the totalQuantidadeReq value using the current property of the ref
-      const totalQuantidadeReqValue = totalQuantidadeReqRef.current;
-      console.log("totalQuantidadeReqValue", totalQuantidadeReqValue);
-    
+  if(quantidade === "" || isNaN(quantidade) || parseInt(quantidade) === 0){  
+    // Show a notification error using the notification manager
+    NotificationManager.error("Houve erro: A quantidade deve ser um numero e maior que zero" , 'Erro', 8000);
+    exitEditingMode(); //required to exit editing mode
+    return;
+  }
+
+     
+    if(valuesCached.length === 0){
+     // DO nothing
+
+    } 
+    let totalQuantidadeReqValue  = totalQuantidadeReqRef.current;
+    if (originalRequisicao.quantidade !=="" && valuesCached.quantidade !== originalRequisicao.quantidade  ){
+
+      totalQuantidadeReqValue = totalQuantidadeReqRef.current- parseInt(originalRequisicao.quantidade) + parseInt(quantidade);
+      // subtract the previous quantidade from totalQuantidadeReq state
+      if(totalQuantidadeReqValue > materialRequisicao[0].qtd_stock ){
+        NotificationManager.error("Houve erro: As quantidades requisitadas sao superiores ao stock" , 'Erro', 8000);
+        exitEditingMode();  //required to exit editing mode
+        return;
+      }
+      setTotalQuantidadeReq(prevState => prevState - parseInt(originalRequisicao.quantidade) + parseInt(quantidade));
+      
+    } else {
+      if(parseInt(quantidade) + totalQuantidadeReqValue > materialRequisicao[0].qtd_stock){
+        NotificationManager.error("Houve erro: As quantidades requisitadas sao superiores ao stock" , 'Erro', 8000);
+        exitEditingMode();  //required to exit editing mode
+        return;
+      }
+
+    }
+     
+    console.log("totalQuantidadeReqValue", totalQuantidadeReqValue);
+ 
     // validate quantidade and phone number
-    if( totalQuantidadeReqValue === materialRequisicao[0].qtd_stock){
+     /* if( totalQuantidadeReqValue === materialRequisicao[0].qtd_stock){
       NotificationManager.error("Houve erro: Nao existe stock disponivel" , 'Erro', 8000);
       exitEditingMode();  //required to exit editing mode
       return;
-    } else if(quantidade === "" || isNaN(quantidade)){  
-      // Show a notification error using the notification manager
-      NotificationManager.error("Houve erro: A quantidade deve ser um numero" , 'Erro', 8000);
-      exitEditingMode(); //required to exit editing mode
-      return;
-    } else if(parseInt(quantidade) + totalQuantidadeReqValue > materialRequisicao[0].qtd_stock){
+    }  *//*  else if(parseInt(quantidade) + totalQuantidadeReqValue > materialRequisicao[0].qtd_stock){
       NotificationManager.error("Houve erro: As quantidades requisitadas sao superiores ao stock" , 'Erro', 8000);
       exitEditingMode();  //required to exit editing mode
       return;
-    }else if(phoneNumber !== "" && !phoneRegex.test(phoneNumber)){
+    } */
+     if(phoneNumber !== "" && !phoneRegex.test(phoneNumber)){
       // Show a notification error using the notification manager
       NotificationManager.error("Houve erro: O contacto deve ter 9 digitos" , 'Erro', 8000);
       exitEditingMode();  //required to exit editing mode
@@ -1770,12 +1798,7 @@ const handleSaveRow =  ({ exitEditingMode, row, values }) => {
       NotificationManager.error("Houve erro: A quantidade requisitada é superior ao stock" , 'Erro', 8000);
       exitEditingMode();  //required to exit editing mode
       return;
-    } else if( parseInt(quantidade)  === 0){
-      // Show a notification error using the notification manager
-      NotificationManager.error("Houve erro: A quantidade requisitada deve ser maior que zero" , 'Erro', 8000);
-      exitEditingMode();  //required to exit editing mode
-      return;
-    }  else if( totalQuantidadeReq > materialRequisicao[0].qtd_stock){
+    }   else if( totalQuantidadeReq > materialRequisicao[0].qtd_stock){
       // Show a notification error using the notification manager
       NotificationManager.error("Houve erro: A quantidade requisitada é superior ao stock" , 'Erro', 8000);
       exitEditingMode();  //required to exit editing mode
@@ -1806,14 +1829,15 @@ const handleSaveRow =  ({ exitEditingMode, row, values }) => {
   // update totalQuantidadeReq state
   // if the quantidade of originalRequisicao isnt null and is greater than zero,
   // subtract it crom previous totalQuantidadeReq state 
-  if(originalRequisicao.quantidade !== "" && parseInt(originalRequisicao.quantidade) > 0){
-    setTotalQuantidadeReq(prevState => prevState - parseInt(originalRequisicao.quantidade)+ parseInt(quantidade));
-  exitEditingMode(); //required to exit editing mode
+   if(originalRequisicao.quantidade !== "" && parseInt(originalRequisicao.quantidade) > 0){
+   // setTotalQuantidadeReq(prevState => prevState - parseInt(originalRequisicao.quantidade)+ parseInt(quantidade));
+   exitEditingMode(); //required to exit editing mode
+
   } else {
 
     setTotalQuantidadeReq(prevState => prevState + parseInt(quantidade));
     exitEditingMode(); //required to exit editing mode
-  }
+  } 
 
 
 };
