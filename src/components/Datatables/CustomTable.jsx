@@ -133,7 +133,8 @@ const handleExportMateriais = (rows) => {
       data={dados}
       initialState={{
         columnVisibility: { id: false,id_area: false },
-         density: 'compact'
+         density: 'compact',
+         pagination: { pageSize: 30, pageIndex: 0 }
          }}
       enableRowSelection
       enableRowActions
@@ -349,7 +350,8 @@ export const MaterialLogisticaTable = ({colunas, dados}) => {
       data={dados}
       initialState={{
         columnVisibility: { id: false,id_area: false, id_projecto: false ,id_armazem:false},
-         density: 'compact'
+         density: 'compact',
+         pagination: { pageSize: 30, pageIndex: 0 }
          }}
       enableRowSelection
       enableRowActions
@@ -1148,7 +1150,7 @@ export const  MinhasRequisicoesTable = ({colunas, dados, tipo}) => {
         if (result[0].canceled==='Yes') {
           NotificationManager.success('Requisicao cancelada com sucesso','Sucesso', 5000);
           // update requisicoes array
-          handleClose( );
+          handleClose();
           const updatedRequisicoes = dados.filter((requisicao) => requisicao.id !== id_requisicao);
           setUpdateRequisicoes(updatedRequisicoes);
         }
@@ -1255,7 +1257,8 @@ export const  MinhasRequisicoesTable = ({colunas, dados, tipo}) => {
       data={requisicoes}
       initialState={{
         columnVisibility: { id: false, requisitante_id: false, id_guia: false, guia_status: false},
-         density: 'compact'
+         density: 'compact',
+         pagination: { pageSize: 30, pageIndex: 0 }
          }}
       enableRowSelection
       enableRowActions
@@ -1310,7 +1313,7 @@ export const  MinhasRequisicoesTable = ({colunas, dados, tipo}) => {
   </DialogContent>
   <DialogActions>
     <Button onClick={handleClose}>Cancel</Button>
-    <Button onClick={handleVoidRequisicao}>Salvar</Button>
+    <Button onClick={handleVoidRequisicao}>Sim</Button>
   </DialogActions>
 </Dialog>
 </div>
@@ -1653,7 +1656,8 @@ export const GuiasPorAreaTable = ({colunas, dados}) => {
       data={dados}
       initialState={{
         columnVisibility: { id: false},
-         density: 'compact'
+         density: 'compact',
+         pagination: { pageSize: 30, pageIndex: 0 }
          }}
       enableRowSelection
       enableRowActions
@@ -2139,7 +2143,8 @@ const handleExportColaboradores= (rows) => {
       data={dados}
       initialState={{
         columnVisibility: { id: false,id_area: false, id_role:false },
-         density: 'compact'
+         density: 'compact',
+         pagination: { pageSize: 30, pageIndex: 0 }
          }}
       enableRowSelection
       enableRowActions
