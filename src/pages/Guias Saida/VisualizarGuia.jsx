@@ -195,11 +195,15 @@ const handleConfirmar = async () =>  {
     try {
 
      let res = await fetchResultUpdateGuia(guia);
-     NotificationManager.success("Confirmada a Entrega da Guia: {" +  nr_guia + " }"  , 'Sucesso', 5000);
-    // setEnableConfirmar(true);
-     // refresh the page
-     wait(5000);
-      window.location.reload();
+     NotificationManager.success("Confirmada a Entrega da Guia: {" +  nr_guia + " }"  , 'Sucesso', 2000);
+     // setEnableConfirmar(true);
+     // wait 2 second then navigate to the ListaGuias page
+     // wait 2 seconds then redirect to PedidosPendentesArea
+     setTimeout(() => {
+        // redirect to ListaGuias
+        window.location.href = "/listaGuias";
+     }, 2000);
+  
   } catch (error) {
        // handle any error state, rejected promises, etc..
         NotificationManager.error("Houve erro ao confirmar Entrega : " + error.message , 'Erro: ' +error.code, 8000);
