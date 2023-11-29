@@ -28,7 +28,7 @@ import UploadFileIcon from '@mui/icons-material/UploadFile';
 import RestartAltIcon from '@mui/icons-material/RestartAlt';
 import { ImportExport, RestartAlt } from "@mui/icons-material";
 import UploadFileOutlinedIcon from '@mui/icons-material/UploadFileOutlined';
-
+import {updateGuia} from "../../middleware/GuiaService.js";
 
 // TODO highlight selected row
 export const MaterialDisponivelTable = ({colunas, dados}) => {
@@ -1651,6 +1651,80 @@ export const GuiasPorAreaTable = ({colunas, dados}) => {
   
   };
   
+const fetchResultUpdateGuia = async (json) => {
+
+  const resultado = await updateGuia(json);
+
+  return resultado;
+  
+};
+
+
+  const handleConfirmarEntrega =  async(rows) => {
+    // Check if multiple rows are selected
+    if (rows.length > 0) {
+
+      // if more than one row is selected, show a popup notification and return
+      if (rows.length > 1) {
+        NotificationManager.info('Apenas uma guia pode ser selecionada de cada vez','Info', 5000);
+        return;
+      } 
+
+      // get userData and isAutheticade from sessionStorage
+      const sessionData = sessionStorage.getItem('userData'); // Retrieve data from localStorage
+      let userData = sessionData ? JSON.parse(sessionData) : null; // Parse the retrieved data
+
+      let confirmationStatus = null;
+      let numero_guia = null;
+      // get all properties from rows (dados) and store in an array. each row represent a guia de saida.
+      guiaSaida = rows.map((row) => {
+       // Get values from the selected row and create a json object
+       // driver id is 0 : driver  who was first assigned the delivery task did no change until the delivery is confirmed
+       let guia = {
+         id_guia: row.getValue('id'),
+         driver_id: 0,
+         confirmed_by: userData[0].id
+       };
+       confirmationStatus = row.getValue('status');
+        numero_guia = row.getValue('nr_guia');
+       return guia;
+
+     });
+     if (confirmationStatus === 'ENTREGUE') {
+      NotificationManager.info('Esta guia ja foi confirmada','Info', 3000);
+      return;
+      }
+
+
+
+
+
+
+
+      try {
+
+        let res = await fetchResultUpdateGuia(guiaSaida);
+        NotificationManager.success("Confirmada a Entrega da Guia: {" +  numero_guia + " }"  , 'Sucesso', 3000);
+        // setEnableConfirmar(true);
+        // wait 2 second then navigate to the ListaGuias page
+        // wait 2 seconds then redirect to PedidosPendentesArea
+        setTimeout(() => {
+           // reload the page
+            window.location.reload();
+        }, 2000);
+     
+     } catch (error) {
+          // handle any error state, rejected promises, etc..
+           NotificationManager.error("Houve erro ao confirmar Entrega : " + error.message , 'Erro: ' +error.code, 8000);
+   
+         }
+      
+        
+  
+    }
+  
+  };
+  
 
   return (
 
@@ -1672,11 +1746,20 @@ export const GuiasPorAreaTable = ({colunas, dados}) => {
           
             <Button
               color="success"
-              disabled={table.getSelectedRowModel().rows.length === 0}
+              disabled={table.getSelectedRowModel().rows.length === 0  }
               onClick={ () => handleVisualizarGuia(table.getSelectedRowModel().rows)}
               variant="contained"
             >
             Visualizar Guia
+            </Button>
+            <Button
+              color="success"
+              // disable if no row is selected or if the selected row is already confirmed
+              disabled={table.getSelectedRowModel().rows.length === 0 || table.getSelectedRowModel().rows[0].status === 'ENTREGUE'}
+              onClick={ () => handleConfirmarEntrega(table.getSelectedRowModel().rows)}
+              variant="contained"
+            >
+            Confirmar Entrega
             </Button>
             <Button
             disabled={table.getPrePaginationRowModel().rows.length === 0}

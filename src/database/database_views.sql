@@ -315,9 +315,17 @@ declare
     guia_nr varchar;
 begin
     -- update guia_saida
-    update api.guia_saida set status = 4, data_entrega = current_date , motorista = driver_id, confirmedby =confirmed_by  where id = id_guia
-    returning id into guia_nr;
+    -- if driver_id is null or empty then update only status and confirmedby
+    if driver_id is null or driver_id = 0 then
+        update api.guia_saida set status = 4, confirmedby =confirmed_by, data_entrega = current_date  where id = id_guia
+        returning nr_guia into guia_nr;
+        return guia_nr;
+    end if;
+    -- if driver_id is not null or empty then update status, confirmedby and motorista
+    update api.guia_saida set status = 4, confirmedby =confirmed_by, motorista = driver_id , data_entrega= current_date where id = id_guia
+    returning nr_guia into guia_nr;
     return guia_nr;
+
 end; $$;
 
 alter function api.sp_confirmar_guia_saida( bigint,bigint,bigint) owner to sidmat;
@@ -331,7 +339,7 @@ grant execute on function api.sp_confirmar_guia_saida( bigint,bigint,bigint) to 
 drop view if exists api.vw_guias_saida;
 create or replace view api.vw_guias_saida as
 SELECT gs.id, gs.nr_guia, gs.data_guia::date, s.name as status, gs.previsao_entrega::date, gs.observacao,
-       c.nome as motorista, us.nome as unidade_sanitaria, a.area, gs.data_entrega::date, c2.nome as createdby, c3.nome as confirmedby
+       c.id as motorista_id, c.nome as motorista, us.nome as unidade_sanitaria, a.area, gs.data_entrega::date, c2.nome as createdby, c3.nome as confirmedby
 FROM api.guia_saida gs
     inner join api.colaborador c on c.id = gs.motorista
 
