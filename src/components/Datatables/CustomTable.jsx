@@ -1153,6 +1153,9 @@ export const  MinhasRequisicoesTable = ({colunas, dados, tipo}) => {
           handleClose();
           const updatedRequisicoes = dados.filter((requisicao) => requisicao.id !== id_requisicao);
           setUpdateRequisicoes(updatedRequisicoes);
+          // refesh the page
+          window.location.reload();
+          
         }
         
       } catch (error) {
@@ -1446,8 +1449,7 @@ const handleConfirmCriarGuia = () => {
       // remove all materiaisRequisitados from requisicoesArea and store in remaingRequisicoes
 
       let remaingRequisicoes = requisicoesArea.filter((requisicao) => 
-    !materiasRequisitados.some((material) => material.id_requisicao === requisicao.id_requisicao)
-);
+    !materiasRequisitados.some((material) => material.id_requisicao === requisicao.id_requisicao));
 
 
 if(remaingRequisicoes.length > 0) {
@@ -1471,8 +1473,9 @@ if(remaingRequisicoes.length > 0) {
 
 } else {
 
+let requisicoesSelecionadas = materiasRequisitados;
 navigate('/novaGuia', {
-  state: {materiasRequisitados, areaInfo },
+  state: {requisicoesSelecionadas, areaInfo },
   replace: true,
 });
 
