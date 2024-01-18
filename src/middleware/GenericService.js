@@ -161,7 +161,7 @@ export async function getRequisicoesByDistrito(area) {
 
     try{
     let allAreas = "";
-    if(area.length>1){
+    if(area.length > 1){
       let tempArea =area;
       tempArea.forEach((area, index) => {
         allAreas += `"${area}"`;
@@ -234,11 +234,31 @@ catch(error) {
   throw error;
 }
 }
-
+// create a function to register a new ponto focal
+export async function createPontoFocal(data) {
+  try{
+    const response = await api.post('/rpc/sp_insert_ponto_focal',data, {headers: {'Prefer': 'return=representation'}} );
+    return  response.data;
+}
+catch(error) {
+  throw error;
+}
+}
 // create a function to get all colaboradores
 export async function getAllColaboradores() {
   try{
     const response = await api.get('/vw_all_colaboradores' );
+    return  response.data;
+}
+catch(error) {
+  throw error;
+}
+} 
+
+// create a function to get all unidades sanitarias
+export async function getLocations() {
+  try{
+    const response = await api.get('/vw_get_locations' );
     return  response.data;
 }
 catch(error) {
@@ -312,3 +332,35 @@ catch(error) {
 }
 
 
+export async function getPontosFocais(area) {
+
+  try{
+    let allAreas = "";
+    if(area.length > 1){
+      let tempArea =area;
+      tempArea.forEach((area, index) => {
+        allAreas += `"${area}"`;
+        if (index !== tempArea.length - 1) {
+          allAreas += ',';
+        }
+      });
+
+      allAreas = allAreas.replace(/&/g, '%26');
+
+        const response = await api.get('/ponto_focal_view?area_name=%7B' +allAreas+ '%7D'); // %7B = { and %7D = }
+        return  response.data;
+
+    }
+    else{
+      let allAreas = area;
+
+      allAreas = allAreas.map(area => area.replace(/&/g, '%26'));
+        const response = await api.get('/ponto_focal_view?area=eq.' +allAreas); 
+        return  response.data;
+
+    }
+  } catch(error) {
+    throw error;
+  }
+  
+}

@@ -111,8 +111,13 @@ const initMenuAssessor = [
     label: 'Requisições'
   },
   {
-    label: "Nova Requisição",
+    label: "Nova ( por material)",
     path: "/materialDisponivel",
+    icon: faPlus,
+  },
+  {
+    label: "Nova (por US)",
+    path: "/requisicaous",
     icon: faPlus,
   },
   {
@@ -129,25 +134,20 @@ const initMenuAssessor = [
     path: "/listaGuias",
     icon: faFileAlt,
   },
-  {
-    label: "TODO",
-    path: "/table",
-    icon: faTable,
-  },
 
-/*   {
-    label: 'Relatórios'
+   {
+    label: 'Admninstração'
   },
   {
-    label: "Histórico de Operações",
-    path: "/auth/login",
+    label: "Gestão de Pontos Focais",
+    path: "/pontoFocal",
     icon: faLock,
   },
   {
     label: "Outros",
-    path: "/auth/register",
+    path: "/outros",
     icon: faNoteSticky,
-  }, */
+  }, 
 ];
 
 export {initMenuLogistica,initMenuAssessor } 

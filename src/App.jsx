@@ -24,6 +24,8 @@ import RegistoColaborador from "./pages/Management/RegistoColaborador";
 import RegistoArea from "./pages/Management/RegistoArea";
 import TemplateDownload from "./pages/Management/TemplateDownload";
 import RegistoProjecto from "./pages/Management/RegistoProjecto";
+import RequisicaoPorUS from "./pages/Requisicoes/RequiscaoPorUS";
+import RegistoPontoFocal from "./pages/Management/RegistoPontoFocal";
 
 function App () {
 
@@ -68,8 +70,10 @@ const AuthWrapper = ({isAuthenticated}) => {
         <Route path="/404" element={<UploadForm />}></Route>
         <Route path="/pedidosArea" element={<PedidosArea />}></Route>
         <Route path="/form" element={<Form />}></Route>
+        <Route path="/pontoFocal" element={<RegistoPontoFocal />}></Route>
         <Route path="/profile" element={<Blank />}></Route>
         <Route path="/requisicao" element={<NovaRequisicao />}></Route>
+        <Route path="/requisicaous" element={<RequisicaoPorUS />}></Route>
        <Route path="/novaGuia" element={<NovaGuia />}></Route> 
         <Route path="/listaGuias" element={<ListaGuias />}></Route>
         <Route path="/criarNovaGuia" element={<RequisicoesPendentes />}></Route>

@@ -170,6 +170,136 @@ const handleExportMateriais = (rows) => {
   );
 };
 
+// TODO highlight selected row
+export const MaterialDisponivelDistribuicaoUSTable = ({colunas, dados, unidadeSanitaria, setMateriaisRequisicao}) => {
+ // const [selectedRowIndex, setSelectedRowIndex] = useState(null);
+  //const customHistory = createBrowserHistory();
+  let material = null;
+  //const navigate = useNavigate();
+  let selectedUnidadeSanitaria = unidadeSanitaria;
+ 
+ const handleActivate = (rows) => {
+  
+
+   const selectedMaterials = rows.map((row) => {
+      // Get values from the selected row and create a json object
+      material = {
+        id: row.getValue('id'),
+        id_area: row.getValue('id_area'),
+        descricao: row.getValue('descricao'),
+        qtd_stock: row.getValue('qtd_stock'),
+        armazem: row.getValue('armazem'),
+        cod: row.getValue('cod'),
+        familia: row.getValue('familia'),
+        prazo: row.getValue('prazo'),
+      };
+      return material;
+    }
+    );
+    // update parent state
+    setMateriaisRequisicao(selectedMaterials);
+ 
+ 
+  } ;
+
+
+
+const handleExportMateriais = (rows) => {
+  const jsonRows = rows;
+  let material = null;
+
+    // extract all data from materiais  from jsonRows and save it to an array
+    // array should contain the following properties: cod, descricao, qtd_stock, armazem, familia, prazo
+   const rowsArray = jsonRows.map((row) => {
+      return {
+        cod: row.getValue('cod'),
+        descricao: row.getValue('descricao'),
+        qtd_stock: row.getValue('qtd_stock'),
+        area: row.getValue('area'),
+        armazem: row.getValue('armazem'),
+        familia: row.getValue('familia'),
+        prazo: row.getValue('prazo'),
+
+      };
+    });
+
+
+    /* generate worksheet and workbook */
+    const worksheet = utils.json_to_sheet(rowsArray);
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, "Materiais Disponiveis");
+
+
+    /* fix headers */
+    utils.sheet_add_aoa(worksheet, [["Cod", "Descricao","Qtd Existente","Area","Armazem","Familia","Prazo"]], { origin: "A1" });
+
+    /* calculate column width ( number of properties from rows object) */
+    const max_width = Object.keys(rows[0]).reduce((acc, key) => Math.max(acc, key.length), 0);
+      //const max_width = rows.reduce((w, r) => Math.max(w, r.name.length), 10);
+    worksheet["!cols"] = [ { wch: max_width } ];
+
+    // Get current date  an store in the YYYY-MM-DD format
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const today = year + '-' + month + '-' + day;
+
+    /* create an XLSX file and try to save to  */
+    // concat the file name  and area with the current date
+      const fileName = "Materiais Disponiveis {" + rowsArray[0].area + "} "+ today + ".xlsx";
+
+    writeFile(workbook,fileName, { compression: true });
+
+
+
+};
+
+  return (
+
+    <MaterialReactTable
+      columns={colunas}
+      data={dados}
+      initialState={{
+        columnVisibility: { id: false,id_area: false },
+         density: 'compact',
+         pagination: { pageSize: 15, pageIndex: 0 }
+         }}
+      enableRowSelection
+      enableRowActions
+      enableColumnOrdering
+      positionToolbarAlertBanner="bottom"
+      renderTopToolbarCustomActions={({ table }) => (
+
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          
+            <Button
+              color="success"
+              disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+              onClick={ () => handleActivate(table.getSelectedRowModel().rows)}
+              variant="contained"
+            >
+            Nova Requisição
+            </Button>
+            <Button
+            disabled={table.getPrePaginationRowModel().rows.length === 0}
+            //export all rows, including from the next page, (still respects filtering and sorting)
+            onClick={() => handleExportMateriais(table.getPrePaginationRowModel().rows)}
+            startIcon={<FileDownloadIcon />}
+            variant="contained"
+          >
+            Download
+          </Button>
+          </div>
+  
+      
+      )}
+    />
+
+  );
+};
+
+
 export const MaterialLogisticaTable = ({colunas, dados}) => {
 
 
@@ -2597,5 +2727,198 @@ const handleExportProjectos = (rows) => {
     </div>
 
 
+  );
+};
+
+// TODO highlight selected row
+export const PontosFocaisTable = ({colunas, dados}) => {
+  const [open, setOpen] = React.useState(false);
+  let usuario = null;
+  let activactioStatus = null;
+  const navigate = useNavigate();
+
+  const handleClose = () => {
+    setOpen(false);
+  };
+  const fetchResultUpdateUserStatus = async (json) => {
+
+    const resultado = await updateUsuarioStatus(json);
+  
+    return resultado;
+    
+  };
+
+  
+ const handleChangeUserStatus = async (rows) => {
+  // Check if multiple rows are selected
+  if (rows.length > 1) {
+    // Alert the user can only activate one row at a time, use NotificationManager
+    NotificationManager.info('Apenas uma linha pode ser selecionada de cada vez','Info', 4000);
+
+  } else {
+  
+    rows.map(async (row) => {
+      // Get values from the selected row and create a json object
+      usuario = {
+        id_usuario: row.getValue('id'),
+        user_status: row.getValue('status'),
+      };
+
+      // Prompt the user for confirmation using a popup
+      // If the user confirms, then update the user status
+      // If the user cancels, then do nothing
+             if (usuario.user_status === 'Active') {
+                usuario.user_status = 'Inactive';
+                 try {
+                  let res = await fetchResultUpdateUserStatus(usuario);
+                  if (res.data === "Actualizado com sucesso") {
+                  NotificationManager.success('Estado do utilizador alterado com sucesso','Sucesso', 4000);
+      
+                   // wait for 5 seconds
+                   setTimeout(() => {
+                    // refresh the page
+                    window.location.reload();
+                  }, 3000);
+                  }
+                
+                } catch (error) {
+                  // show the error
+                  NotificationManager.error('Erro ao actualizar o usuario' +error.message,'Error', 3000);
+                 }
+              } else {
+                usuario.user_status = 'Active';
+                try {
+                  let res = await fetchResultUpdateUserStatus(usuario);
+                  if (res.data === "Actualizado com sucesso") {
+                    NotificationManager.success('Estado do utilizador alterado com sucesso','Sucesso', 3000);
+
+                  // wait for 5 seconds
+                      setTimeout(() => {
+                        // refresh the page
+                        window.location.reload();
+                      }, 3000);
+                    }
+                } catch (error) {
+                  // show the error
+                  NotificationManager.error('Erro ao actualizar o usuario' +error.message,'Error', 4000);
+                 }
+
+                }
+
+    });
+  }
+
+};
+
+const handleExportColaboradores= (rows) => {
+  const jsonRows = rows;
+
+    // extract all data from colaboradores  from jsonRows and save it to an array
+    // array should contain the following properties: Nome, Email, Contacto, Area, Cargo, Papel
+   const rowsArray = jsonRows.map((row) => {
+      return {
+        Nome: row.getValue('nome'),
+        Email: row.getValue('email'),
+        Contacto: row.getValue('contacto'),
+        Area: row.getValue('area'),
+        Cargo: row.getValue('funcao'),
+        Papel: row.getValue('role'),
+        Estado: row.getValue('status'),
+      };
+    } );
+
+
+    /* generate worksheet and workbook */
+    const worksheet = utils.json_to_sheet(rowsArray);
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, "Usuarios");
+
+
+    /* fix headers */
+    utils.sheet_add_aoa(worksheet, [["Nome", "Email","Contacto","Area","Cargo","Papel"]], { origin: "A1" });
+    /* calculate column width ( number of properties from rows object) */
+    const max_width = Object.keys(rows[0]).reduce((acc, key) => Math.max(acc, key.length), 0);
+      //const max_width = rows.reduce((w, r) => Math.max(w, r.name.length), 10);
+    worksheet["!cols"] = [ { wch: max_width } ];
+
+    // Get current date  an store in the YYYY-MM-DD format
+    const date = new Date();
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const today = year + '-' + month + '-' + day;
+
+    /* create an XLSX file and try to save to  */
+    // concat the file name  and area with the current date
+      const fileName = "Usuarios  "+ today + ".xlsx";
+
+    writeFile(workbook,fileName, { compression: true });
+
+
+
+};
+
+  return (
+   <div> 
+    <MaterialReactTable
+      columns={colunas}
+      data={dados}
+      initialState={{
+        columnVisibility: { id: false,unidade_sanitaria_id: false, area_id:false },
+         density: 'compact',
+         pagination: { pageSize: 30, pageIndex: 0 }
+         }}
+      enableRowSelection
+      enableRowActions
+      enableColumnOrdering
+      positionToolbarAlertBanner="bottom"
+      renderTopToolbarCustomActions={({ table }) => (
+
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          
+            <Button
+              color="success"
+              disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+              onClick={ () => handleChangeUserStatus(table.getSelectedRowModel().rows)}
+              variant="contained"
+            >
+            Activar / Desactivar
+            </Button>
+            <Button
+            disabled={table.getPrePaginationRowModel().rows.length === 0}
+            //export all rows, including from the next page, (still respects filtering and sorting)
+            onClick={() => handleExportColaboradores(table.getPrePaginationRowModel().rows)}
+            startIcon={<FileDownloadIcon />}
+            variant="contained"
+          >
+            Download
+          </Button>
+          </div>
+  
+      
+      )}
+    />
+    <Dialog
+    open={open}
+    onClose={handleClose}
+    aria-labelledby="alert-dialog-title"
+    aria-describedby="alert-dialog-description"
+  >
+    <DialogTitle id="alert-dialog-title">
+      {"Alterar o estado do usuario"}
+    </DialogTitle>
+    <DialogContent>
+      <DialogContentText id="alert-dialog-description">
+      Tem a certeza que deseja alterar o estado deste utilizador?
+      </DialogContentText>
+    </DialogContent>
+    <DialogActions>
+      <Button onClick={handleChangeUserStatus}>Alterar</Button>
+      <Button onClick={handleClose} autoFocus>
+        Fechar
+      </Button>
+    </DialogActions>
+  </Dialog>
+  </div>
   );
 };
