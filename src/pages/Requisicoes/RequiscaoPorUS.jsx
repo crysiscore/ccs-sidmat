@@ -3,7 +3,7 @@ import React, { useState, useEffect  } from "react";
 import Navbar from "../../components/Navbar/Index";
 import { useOutletContext } from "react-router-dom";
 import {MinhasRequisicoesTable} from "../../components/Datatables/CustomTable";
-import { getLocations } from "../../middleware/GenericService";
+import { getLocations , getPontosFocais } from "../../middleware/GenericService";
 import ClipLoader from "react-spinners/ClipLoader";
 import { NotificationManager} from 'react-notifications';
 import 'react-notifications/lib/notifications.css';
@@ -80,6 +80,46 @@ const columnNamesQuantidadesDistribuicao = [
     header: 'Notas',
   }
 ];
+ 
+const columnNames = [
+  {
+    accessorKey: 'id',
+    header: 'ID',
+    size: 10,
+  },
+  {
+    accessorKey: 'cod',
+    header: 'Cod',
+    size: 40,
+  },
+  {
+    accessorKey: 'descricao',
+    header: 'Descricao',
+    size: 120,
+  },
+  {
+    accessorKey: 'qtd_stock',
+    header: 'Stock',
+    size: 10,
+  },
+  {
+    accessorKey: 'area',
+    header: 'Area',
+    size: 10,
+  },
+
+  {
+    accessorKey: 'prazo',
+    header: 'Prazo',
+    size: 60,
+  },
+
+  {
+    accessorKey: 'id_area',
+    header: 'ID Area',
+    size: 10,
+  }
+];
 export default function RequisicaoPorUS() {
 
 
@@ -88,9 +128,8 @@ export default function RequisicaoPorUS() {
   const [loading,setHasFinishedLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [locations, setLocations] = useState();
-
+  const [pontosFocais, setPontosFocais] = useState();
   const [materialList, setData] = useState();
-  const [listArmazens, setListArmazens] = useState();
 
   const [requisicoes, setRequisicoes] = useState([]);
   const [materialRequisicao, setMaterialRequisicao] = useState([]);
@@ -156,46 +195,6 @@ useEffect(() => {
 
 }, []);
 
- 
-const columnNames = [
-  {
-    accessorKey: 'id',
-    header: 'ID',
-    size: 10,
-  },
-  {
-    accessorKey: 'cod',
-    header: 'Cod',
-    size: 40,
-  },
-  {
-    accessorKey: 'descricao',
-    header: 'Descricao',
-    size: 120,
-  },
-  {
-    accessorKey: 'qtd_stock',
-    header: 'Stock',
-    size: 10,
-  },
-  {
-    accessorKey: 'area',
-    header: 'Area',
-    size: 10,
-  },
-
-  {
-    accessorKey: 'prazo',
-    header: 'Prazo',
-    size: 60,
-  },
-
-  {
-    accessorKey: 'id_area',
-    header: 'ID Area',
-    size: 10,
-  }
-];
 
 //get Material by area
 useEffect(() => {
@@ -212,19 +211,26 @@ getMaterialDisponivel(userArea)
 
 }, [selectedUs]);
 
-useEffect(() => {
-getAllArmazens()
-  .then(data =>{
 
-    setListArmazens(data);
-    setHasFinishedLoading(true);
-  } )
-  .catch(error => {
-    // handle any error state, rejected promises, etc..
-    setError(error);
-    setHasFinishedLoading(false);
-  });
+// get pontos focais by area 
+useEffect(() => {
+    // get pontos focais by area
+    getPontosFocais(allAreas)
+    .then(pontosFocais => {
+
+      // filter all 
+      setPontosFocais(pontosFocais);
+
+    } )
+    .catch(error => {
+      // handle any error state, rejected promises, etc..
+      setError(error);
+
+    });
 }, []);
+
+
+
 
 
 const handleSaveRow =  ({ exitEditingMode, row, values }) => {
@@ -237,8 +243,14 @@ const handleSaveRow =  ({ exitEditingMode, row, values }) => {
     const phoneRegex = /^\d{9}$/;
     const phoneNumber = values.pf_contacto;
     const quantidade = values.quantidade;
+
+    // check if quantidade is not a decimal number
+    let isDecimal = quantidade % 1 !== 0;
+    //check if quantidade does not start with the value 0
+    let startsWithZero = quantidade.startsWith("0");
+
   // access the totalQuantidadeReq value using the current property of the ref
-  if(quantidade === "" || isNaN(quantidade) || parseInt(quantidade) === 0){  
+  if(quantidade === "" || isNaN(quantidade) || parseInt(quantidade) === 0 || isDecimal || startsWithZero){  
     // Show a notification error using the notification manager
     NotificationManager.error("Houve erro: A quantidade deve ser um numero e maior que zero" , 'Erro', 4000);
     exitEditingMode(); //required to exit editing mode
@@ -376,8 +388,6 @@ const setMateriaisRequisicao = (newObjects) => {
   newObjects.forEach((object) => {
     object.idUS = selectedUs.value;
     object.quantidade = 0;
-    object.pf_nome = "";
-    object.pf_contacto = "";
     object.notas = "";
   });
 
@@ -413,10 +423,20 @@ const fetchResult = async (json) => {
 
 const handleEnviarRequisicao = async (rows) => {
 
-   // if there is one requisicao object with quantidade empty, then show error message
+
+   // if there is one requisicao object with quantidade empty or  quatidade is  an integer grater than zero, then show error message
    let requisicoesWithEmptyQuantidade = materialRequisicao.filter((item) => {
-    return item.quantidade === "";
+
+   
+    return item.quantidade === "" ||  isNaN(item.quantidade) || parseInt(item.quantidade) === 0;
   } );
+
+// check if quantidade is not a decimal number
+
+
+
+
+
 
   if(requisicoesWithEmptyQuantidade.length > 0){
     NotificationManager.error("Houve erro: Todas  as requisicoes devem ter  quantidade superior a zero. corrija os dados" , 'Erro', 5000);
@@ -486,7 +506,7 @@ updatedRequisicoesArray = updatedRequisicoesArray.map(({ id_area, ...item }) => 
 
 
   //Show a spinner while the data is being fetched'
-  if (!locations || !materialList || !listArmazens) {
+  if (!locations || !materialList  || !pontosFocais) {
     return (
       <>
         <main className="h-full">
@@ -547,7 +567,7 @@ updatedRequisicoesArray = updatedRequisicoesArray.map(({ id_area, ...item }) => 
                     <div className=" gap-y-4 overflow-hidden overflow-y-auto center wrapper-requisicoes ">
         
                       
-                   <MaterialDisponivelDistribuicaoUSTable colunas = {columnNames}  dados = {[]}  unidadeSanitaria={selectedUs} />
+                   <MaterialDisponivelDistribuicaoUSTable colunas = {columnNames}  dados = {[]}  unidadeSanitaria={selectedUs} pontoFocal ={pontosFocais}  setMateriaisRequisicao ={ setMateriaisRequisicao} />
            </div>
           
          </div>
@@ -557,6 +577,9 @@ updatedRequisicoesArray = updatedRequisicoesArray.map(({ id_area, ...item }) => 
   }  
   else {
 
+
+
+       
         return (
           <>
           <main className="h-full">
@@ -594,7 +617,7 @@ updatedRequisicoesArray = updatedRequisicoesArray.map(({ id_area, ...item }) => 
                   <h1 className="text-slate-500 pb-3 text-base md:text-lg">
                       Especifique os materiais  a requisitar para: {selectedUs.unidade_sanitaria}
                     </h1>
-                 <MaterialDisponivelDistribuicaoUSTable colunas = {columnNames}  dados = {materialList}   unidadeSanitaria={selectedUs}  setMateriaisRequisicao ={ setMateriaisRequisicao}   /> 
+                 <MaterialDisponivelDistribuicaoUSTable colunas = {columnNames}  dados = {materialList}   unidadeSanitaria={selectedUs} pontoFocal ={pontosFocais}  setMateriaisRequisicao ={ setMateriaisRequisicao}   /> 
                  <br></br>
                  <h1 className="text-slate-500 pb-3 text-base md:text-lg">
                   Especifique as quantidades a requisitar para: {selectedUs.unidade_sanitaria}

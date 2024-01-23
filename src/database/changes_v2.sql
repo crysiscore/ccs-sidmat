@@ -24,17 +24,20 @@ grant delete, insert, select, update on api.ponto_focal to web_anon;
 
 -- create a view to select all the data from api.ponto_focal , view should contain all data from api.ponto_focal and the name of the area and unidade_sanitaria as aditional columns
 
+drop view if exists api.ponto_focal_view cascade;
 create view api.ponto_focal_view as
-    select pf.id,
-           pf.nome,
-           pf.contacto,
-           a.area as area,
-           us.nome as unidade_sanitaria,
-           a.id as area_id,
-           us.id as unidade_sanitaria_id
-    from api.ponto_focal pf
-             join api.area a on pf.area = a.id
-             join api.unidade_sanitaria us on pf.unidade_sanitaria = us.id;
+    SELECT pf.id,
+       pf.nome,
+       pf.contacto,
+       a.area,
+       us.nome      AS unidade_sanitaria,
+       a.id         AS area_id,
+       us.id        AS unidade_sanitaria_id,
+       pf.status,
+       pf.preferred
+FROM api.ponto_focal pf
+         JOIN api.area a ON pf.area = a.id
+         JOIN api.unidade_sanitaria us ON pf.unidade_sanitaria = us.id;
 
 alter table api.ponto_focal_view   owner to sidmat;
 
@@ -74,3 +77,48 @@ alter function api.sp_insert_ponto_focal(varchar, varchar, bigint, bigint) owner
 
 grant execute on function api.sp_insert_ponto_focal(varchar, varchar, bigint, bigint) to web_anon;
 
+
+-- Create a trigger function that checks if the  there is already one ponto focal row in the table api.ponto_focal with the same unidae_sanitaria and area
+-- if there is already one row with the same unidade_sanitaria and area then the set the preferred column to false else set the preferred column to true.
+-- the trigger function should riun afrer insert or update on api.ponto_focal
+
+-- first drop the trigger function if it exists
+drop function if exists api.tf_ponto_focal_preferred() cascade;
+
+create or replace function api.tf_ponto_focal_preferred() returns trigger
+    language plpgsql
+as
+$$
+begin
+    if exists(select 1 from api.ponto_focal pf where pf.unidade_sanitaria = new.unidade_sanitaria and pf.area = new.area and pf.id <> new.id) then
+        update api.ponto_focal set preferred = 'Nao' where id = new.id;
+    else
+        update api.ponto_focal set preferred = 'Sim' where id = new.id;
+    end if;
+    return new;
+end; $$;
+
+alter function api.tf_ponto_focal_preferred() owner to sidmat;
+
+create trigger tf_ponto_focal_preferred
+    after insert
+    on api.ponto_focal
+    for each row
+    execute procedure api.tf_ponto_focal_preferred();
+
+grant execute on function api.tf_ponto_focal_preferred() to web_anon;
+
+
+create function sp_update_ponto_focal_status(id_ponto_focal bigint, preferred_status character varying) returns text
+    language plpgsql
+as
+$$
+declare
+    user_id bigint;
+begin
+    -- update usuario
+    update api.ponto_focal set preferred = preferred_status where id = id_ponto_focal returning id into user_id;
+    return 'Estado preferido actualizado com sucesso';
+end; $$;
+
+alter function sp_update_ponto_focal_status(bigint, varchar) owner to sidmat;
