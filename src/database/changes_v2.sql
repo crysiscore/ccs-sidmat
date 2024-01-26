@@ -1,19 +1,21 @@
 --  creat a table if not exists api.ponto_focal containing the following columns, id default nextval('api.ponto_focal_id_seq'::regclass) not null,
 -- nome, contacto and unidade_sanitaria. unidade_sanitaria us a foreign key to api.unidade_sanitaria(id)
 
-create table api.ponto_focal
+create table if not exists api.ponto_focal
 (
-    id                bigint default nextval('api.ponto_focal_id_seq'::regclass) not null
+    id                bigint  default nextval('api.ponto_focal_id_seq'::regclass) not null
         constraint ponto_focal_pk
             primary key,
     nome              varchar,
     contacto          varchar,
-    area              bigint                                                     not null
+    area              bigint
         constraint ponto_focal_area_id_fk
             references api.area,
     unidade_sanitaria bigint
         constraint ponto_focal_unidade_sanitaria_id_fk
-            references api.unidade_sanitaria
+            references api.unidade_sanitaria,
+    status            varchar default 'activo'::character varying,
+    preferred         varchar(3)
 );
 
 alter table api.ponto_focal
@@ -21,6 +23,7 @@ alter table api.ponto_focal
 
 
 grant delete, insert, select, update on api.ponto_focal to web_anon;
+
 
 -- create a view to select all the data from api.ponto_focal , view should contain all data from api.ponto_focal and the name of the area and unidade_sanitaria as aditional columns
 
@@ -58,7 +61,7 @@ end; $$;
 alter function api.sp_update_pf_status(bigint, varchar) owner to sidmat;
 
 
-create function api.sp_insert_ponto_focal(nome_ponto_focal character varying,  contacto_ponto_focal character varying,id_us bigint, id_area bigint) returns bigint
+create or replace function api.sp_insert_ponto_focal(nome_ponto_focal character varying,  contacto_ponto_focal character varying,id_us bigint, id_area bigint) returns bigint
     language plpgsql
 as
 $$
@@ -99,12 +102,11 @@ begin
 end; $$;
 
 alter function api.tf_ponto_focal_preferred() owner to sidmat;
-
 create trigger tf_ponto_focal_preferred
     after insert
     on api.ponto_focal
     for each row
-    execute procedure api.tf_ponto_focal_preferred();
+execute procedure api.tf_ponto_focal_preferred();
 
 grant execute on function api.tf_ponto_focal_preferred() to web_anon;
 
@@ -122,3 +124,33 @@ begin
 end; $$;
 
 alter function sp_update_ponto_focal_status(bigint, varchar) owner to sidmat;
+
+
+
+create or replace function api.sp_update_material(id_material bigint, material_nome character varying, quantidade bigint, previous_area_id bigint ,id_area bigint) returns text
+    language plpgsql
+as
+$$
+declare
+   material_id bigint;
+begin
+    -- if the previous_area_id is not the same as id_area then check if there are requisitions for the material in the previous_area_id
+    if previous_area_id <> id_area then
+        if exists(select 1 from api.requisicao r where r.material = id_material ) then
+            return 'Material cannot be moved because there are requisitions for the material in the previous area';
+        else
+                -- update material , because there arent any requisitions for the material in the previous_area_id
+            update api.material set descricao= material_nome, qtd_stock = quantidade , area= id_area  where id = id_material returning id into material_id;
+            return 'Actualizado com sucesso';
+        end if;
+    else
+        -- update material
+        update api.material set descricao= material_nome, qtd_stock = quantidade , area= id_area  where id = id_material returning id into material_id;
+        return 'Actualizado com sucesso';
+    end if;
+
+end; $$;
+
+alter function api.sp_update_material(bigint, varchar, bigint) owner to sidmat;
+
+grant execute on function api.sp_update_material(bigint, varchar, bigint) to web_anon;

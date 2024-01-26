@@ -45,6 +45,10 @@ import ListItem from "@mui/material/ListItem";
 import ListItemAvatar from "@mui/material/ListItemAvatar";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemText from "@mui/material/ListItemText";
+import { select } from "@nextui-org/react";
+import { Select } from "@mui/material";
+import MenuItem from "@mui/material/MenuItem";
+import FormControl from "@mui/material/FormControl";
 
 export const MaterialDisponivelTable = ({ colunas, dados }) => {
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
@@ -382,10 +386,11 @@ export const MaterialDisponivelDistribuicaoUSTable = ({
   );
 };
 
-export const MaterialLogisticaTable = ({ colunas, dados }) => {
+export const MaterialLogisticaTable = ({ colunas, dados, areas }) => {
   const [materialDescricao, setMaterialDescricao] = useState("");
   const [materialStock, setMaterialStock] = useState(0);
-
+  const [currentArea, setCurrentArea] = useState(null);
+  let areasProgramaticas = areas;
   const handleMaterialDescricaoChange = (event) => {
     setMaterialDescricao(event.target.value);
   };
@@ -402,6 +407,7 @@ export const MaterialLogisticaTable = ({ colunas, dados }) => {
   const handleClose = () => {
     setOpen(false);
   };
+
   const handleSaveEditedMaterial = async () => {
     // Get the values from the form
     // const materialCod = document.getElementById('material-cod-edit').value;
@@ -410,8 +416,16 @@ export const MaterialLogisticaTable = ({ colunas, dados }) => {
     ).value;
     const materialStock = document.getElementById("material-stock-edit").value;
 
+    const materialArea = currentArea;
+    // const materialArea2 = document.getElementById("area-simple-select").value;
+
     // Check if the values are empty
-    if (materialDescricao === "" || materialStock === "") {
+    if (
+      materialDescricao === "" ||
+      materialStock === "" ||
+      materialArea === "" ||
+      !materialArea
+    ) {
       NotificationManager.error("Preencha todos os campos", "Error", 4000);
       return;
     }
@@ -435,6 +449,12 @@ export const MaterialLogisticaTable = ({ colunas, dados }) => {
       );
       return;
     }
+    // from the areasProgramaticas array, get the id value pf the object that matches the currentArea
+
+    const areaObject = areasProgramaticas.find(
+      (area) => area.area === materialArea
+    );
+    const areaObjectId = areaObject.id;
 
     // Create an area object with the values
     let newMaterial = {
@@ -442,6 +462,8 @@ export const MaterialLogisticaTable = ({ colunas, dados }) => {
       //cod: materialCod,
       material_nome: materialDescricao,
       quantidade: materialStockNumber,
+      previous_area_id: materialToEdit.id_area,
+      id_area: areaObjectId,
     };
 
     // Update the Material
@@ -449,7 +471,7 @@ export const MaterialLogisticaTable = ({ colunas, dados }) => {
       let res = await fetchResultUpdateMaterial(newMaterial);
       if (res.data === "Actualizado com sucesso") {
         NotificationManager.success(
-          "Material actualizada com sucesso",
+          "Material actualizado com sucesso",
           "Sucesso",
           3000
         );
@@ -459,6 +481,17 @@ export const MaterialLogisticaTable = ({ colunas, dados }) => {
           handleClose();
           window.location.reload();
         }, 3000);
+      } else if (
+        res.data ===
+        "Material cannot be moved because there are requisitions for the material in the previous area"
+      ) {
+        // show the error
+        NotificationManager.error(
+          "Este material ja tem requisicoes associadas. Nao e possivel trocar a area",
+          "Error",
+          7000
+        );
+        handleClose();
       } else {
         NotificationManager.error(
           "Erro ao actualizar o Material",
@@ -573,92 +606,167 @@ export const MaterialLogisticaTable = ({ colunas, dados }) => {
           id: row.getValue("id"),
           material: row.getValue("descricao"),
           quantidade: row.getValue("qtd_stock"),
+          area: row.getValue("area"),
+          id_area: row.getValue("id_area"),
         };
         setMaterialDescricao(material.material);
         setMaterialStock(material.quantidade);
         setMaterialToEdit(material);
+        setCurrentArea(material.area);
         handleClickOpen();
       });
     }
   };
+  const handleAreaChange = (event) => {
+    setCurrentArea(event.target.value);
+  };
 
-  return (
-    <div>
-      <MaterialReactTable
-        columns={colunas}
-        data={dados}
-        initialState={{
-          columnVisibility: {
-            id: false,
-            id_area: false,
-            id_projecto: false,
-            id_armazem: false,
-          },
-          density: "compact",
-          pagination: { pageSize: 30, pageIndex: 0 },
-        }}
-        enableRowSelection
-        enableRowActions
-        enableColumnOrdering
-        positionToolbarAlertBanner="bottom"
-        renderTopToolbarCustomActions={({ table }) => (
-          <div style={{ display: "flex", gap: "0.5rem" }}>
-            <Button
-              color="success"
-              disabled={table.getFilteredSelectedRowModel().rows.length === 0}
-              onClick={() => handleActivate(table.getSelectedRowModel().rows)}
-              variant="contained"
-            >
-              Editar
-            </Button>
-            <Button
-              disabled={table.getPrePaginationRowModel().rows.length === 0}
-              //export all rows, including from the next page, (still respects filtering and sorting)
-              onClick={() => handleExportRows(table.getFilteredRowModel().rows)}
-              startIcon={<FileDownloadIcon />}
-              variant="contained"
-            >
-              Download
-            </Button>
-          </div>
-        )}
-      />
-
+  if (!areasProgramaticas) {
+    return (
       <div>
-        <Dialog open={open} onClose={handleClose}>
-          <DialogTitle> Editar Material </DialogTitle>
-          <DialogContent>
-            <DialogContentText>
-              Nome: {materialToEdit?.material}
-            </DialogContentText>
-            <TextField
-              margin="dense"
-              id="material-descricao-edit"
-              label="Nome"
-              value={materialDescricao}
-              onChange={handleMaterialDescricaoChange}
-              sx={{ width: 300 }}
-              variant="standard"
-            />
-            <br></br>
-            <TextField
-              margin="dense"
-              id="material-stock-edit"
-              label="Quantidade"
-              value={materialStock}
-              onChange={handleMaterialStockChange}
-              sx={{ width: 300 }}
-              variant="standard"
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
-            <Button onClick={handleSaveEditedMaterial}>Salvar</Button>
-          </DialogActions>
-        </Dialog>
+        <MaterialReactTable
+          columns={colunas}
+          data={dados}
+          initialState={{
+            columnVisibility: {
+              id: false,
+              id_area: false,
+              id_projecto: false,
+              id_armazem: false,
+            },
+            density: "compact",
+            pagination: { pageSize: 30, pageIndex: 0 },
+          }}
+          enableRowSelection
+          enableRowActions
+          enableColumnOrdering
+          positionToolbarAlertBanner="bottom"
+          renderTopToolbarCustomActions={({ table }) => (
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <Button
+                color="success"
+                disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+                onClick={() => handleActivate(table.getSelectedRowModel().rows)}
+                variant="contained"
+              >
+                Editar
+              </Button>
+              <Button
+                disabled={table.getPrePaginationRowModel().rows.length === 0}
+                //export all rows, including from the next page, (still respects filtering and sorting)
+                onClick={() =>
+                  handleExportRows(table.getFilteredRowModel().rows)
+                }
+                startIcon={<FileDownloadIcon />}
+                variant="contained"
+              >
+                Download
+              </Button>
+            </div>
+          )}
+        />
+
+        <div></div>
       </div>
-    </div>
-  );
+    );
+  } else {
+    return (
+      <div>
+        <MaterialReactTable
+          columns={colunas}
+          data={dados}
+          initialState={{
+            columnVisibility: {
+              id: false,
+              id_area: false,
+              id_projecto: false,
+              id_armazem: false,
+            },
+            density: "compact",
+            pagination: { pageSize: 30, pageIndex: 0 },
+          }}
+          enableRowSelection
+          enableRowActions
+          enableColumnOrdering
+          positionToolbarAlertBanner="bottom"
+          renderTopToolbarCustomActions={({ table }) => (
+            <div style={{ display: "flex", gap: "0.5rem" }}>
+              <Button
+                color="success"
+                disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+                onClick={() => handleActivate(table.getSelectedRowModel().rows)}
+                variant="contained"
+              >
+                Editar
+              </Button>
+              <Button
+                disabled={table.getPrePaginationRowModel().rows.length === 0}
+                //export all rows, including from the next page, (still respects filtering and sorting)
+                onClick={() =>
+                  handleExportRows(table.getFilteredRowModel().rows)
+                }
+                startIcon={<FileDownloadIcon />}
+                variant="contained"
+              >
+                Download
+              </Button>
+            </div>
+          )}
+        />
+
+        <div>
+          <Dialog open={open} onClose={handleClose}>
+            <DialogTitle>
+              {" "}
+              Editar Material: {materialToEdit?.material}{" "}
+            </DialogTitle>
+            <DialogContent>
+              <TextField
+                margin="dense"
+                id="material-descricao-edit"
+                label="Nome"
+                value={materialDescricao}
+                onChange={handleMaterialDescricaoChange}
+                sx={{ width: 300 }}
+                variant="standard"
+              />
+              <br></br>
+              <TextField
+                margin="dense"
+                id="material-stock-edit"
+                label="Quantidade"
+                value={materialStock}
+                onChange={handleMaterialStockChange}
+                sx={{ width: 300 }}
+                variant="standard"
+              />
+              <br></br>
+
+              <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+                <p>
+                  Area: &nbsp; &nbsp;
+                  <Select
+                    labelId="area-select-label"
+                    id="area-simple-select"
+                    value={currentArea}
+                    onChange={handleAreaChange}
+                  >
+                    {areasProgramaticas.map((area) => (
+                      <MenuItem value={area.area}>{area.area}</MenuItem>
+                    ))}
+                  </Select>{" "}
+                </p>
+              </FormControl>
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={handleClose}>Cancel</Button>
+              <Button onClick={handleSaveEditedMaterial}>Salvar</Button>
+            </DialogActions>
+          </Dialog>
+        </div>
+      </div>
+    );
+  }
 };
 
 export const ImportarMaterialPreviewTable = ({

@@ -249,6 +249,8 @@ export default function RegistoPontoFocal() {
     const nome = document.getElementById("nome").value;
     const contacto = document.getElementById("contacto").value;
 
+    const phoneRegex = /^\d{9}$/;
+
     const unidade_sanitaria = selectedUsRef.current;
 
     // unidade_sanitaria can be null or undefined
@@ -256,7 +258,15 @@ export default function RegistoPontoFocal() {
       NotificationManager.error("Selecione uma US", "Erro!", 5000);
       return;
     }
-
+    if (contacto !== "" && !phoneRegex.test(contacto)) {
+      // Show a notification error using the notification manager
+      NotificationManager.error(
+        "Houve erro: O contacto deve ter 9 digitos",
+        "Erro",
+        5000
+      );
+      return;
+    }
     // if any of the fields is empty, show error message
     if (nome === "" || contacto === "" || unidade_sanitaria === "") {
       NotificationManager.error("Prenche todos os campos", "Erro!", 5000);
