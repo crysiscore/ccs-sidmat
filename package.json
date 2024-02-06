@@ -29,7 +29,6 @@
     "file-saver": "^2.0.5",
     "framer-motion": "^10.16.1",
     "fs": "^0.0.1-security",
-    "husky": "^8.0.3",
     "lint-staged": "^15.0.2",
     "material-react-table": "^1.14.0",
     "md5": "^2.3.0",
