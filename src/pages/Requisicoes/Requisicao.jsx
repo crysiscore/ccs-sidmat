@@ -1757,7 +1757,7 @@ function NovaRequisicao() {
   // get pontos focais by area
   useEffect(() => {
     // get pontos focais by area
-    getPontosFocais(allAreas)
+    getPontosFocais(userArea)
       .then((pontosFocais) => {
         // filter all
         setPontosFocais(pontosFocais);

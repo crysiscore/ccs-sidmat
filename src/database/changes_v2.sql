@@ -59,7 +59,7 @@ begin
 end; $$;
 
 alter function api.sp_update_pf_status(bigint, varchar) owner to sidmat;
-
+grant execute on function api.sp_update_pf_status(bigint, varchar) to web_anon;
 
 create or replace function api.sp_insert_ponto_focal(nome_ponto_focal character varying,  contacto_ponto_focal character varying,id_us bigint, id_area bigint) returns bigint
     language plpgsql
@@ -101,6 +101,7 @@ begin
     return new;
 end; $$;
 
+grant execute on function api.tf_ponto_focal_preferred() to web_anon;
 alter function api.tf_ponto_focal_preferred() owner to sidmat;
 create trigger tf_ponto_focal_preferred
     after insert
@@ -111,7 +112,7 @@ execute procedure api.tf_ponto_focal_preferred();
 grant execute on function api.tf_ponto_focal_preferred() to web_anon;
 
 
-create function sp_update_ponto_focal_status(id_ponto_focal bigint, preferred_status character varying) returns text
+create or replace function sp_update_ponto_focal_status(id_ponto_focal bigint, preferred_status character varying) returns text
     language plpgsql
 as
 $$
@@ -124,7 +125,7 @@ begin
 end; $$;
 
 alter function sp_update_ponto_focal_status(bigint, varchar) owner to sidmat;
-
+grant execute on function sp_update_ponto_focal_status(bigint, varchar) to web_anon;
 
 
 create or replace function api.sp_update_material(id_material bigint, material_nome character varying, quantidade bigint, previous_area_id bigint ,id_area bigint) returns text
@@ -154,3 +155,18 @@ end; $$;
 alter function api.sp_update_material(bigint, varchar, bigint) owner to sidmat;
 
 grant execute on function api.sp_update_material(bigint, varchar, bigint) to web_anon;
+
+
+create or replace view api.vw_get_locations(unidade_sanitaria, distrito, value, checked) as
+SELECT us.nome AS unidade_sanitaria,
+       d.distrito,
+       us.id   AS value,
+       false   AS checked
+FROM api.unidade_sanitaria us
+         JOIN api.distrito d ON us.distrito = d.id
+ORDER BY d.distrito;
+
+alter table api.vw_get_locations
+    owner to sidmat;
+
+grant select on api.vw_get_locations to web_anon;

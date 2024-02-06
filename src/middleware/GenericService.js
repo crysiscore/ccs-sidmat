@@ -326,6 +326,10 @@ export async function updateProjecto(project) {
 export async function getPontosFocais(area) {
   try {
     let allAreas = "";
+
+    // Concatenating the values with comma separator
+    let tempAreaArray = [area];
+
     if (area.length > 1) {
       let tempArea = area;
       tempArea.forEach((area, index) => {
@@ -334,11 +338,10 @@ export async function getPontosFocais(area) {
           allAreas += ",";
         }
       });
-
+      // append a comma to each element in area and make it and store in AllAreas
       allAreas = allAreas.replace(/&/g, "%26");
-
       const response = await api.get(
-        "/ponto_focal_view?area_name=%7B" + allAreas + "%7D"
+        "/ponto_focal_view?area=in.(" + allAreas + ")"
       ); // %7B = { and %7D = }
       return response.data;
     } else {
