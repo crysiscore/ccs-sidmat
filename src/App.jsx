@@ -1,5 +1,13 @@
 import React from "react";
-import {  Redirect, BrowserRouter as Router ,Route, Routes ,Link, Navigate, Outlet } from "react-router-dom";
+import {
+  Redirect,
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  Link,
+  Navigate,
+  Outlet,
+} from "react-router-dom";
 import { useState } from "react";
 import Dashboard from "./pages/Dashboard";
 import Table from "./pages/Table";
@@ -19,6 +27,7 @@ import NovaGuia from "./pages/Guias Saida/CriarGuia";
 import ListaGuias from "./pages/Guias Saida/ListaGuias";
 import RequisicoesPendentes from "./pages/Requisicoes/RequisicoesPendentes";
 import VisualizarGuia from "./pages/Guias Saida/VisualizarGuia";
+import ListaGuiasEntregues from "./pages/Guias Saida/ListaGuiasEntregues";
 import MinhasRequisicoes from "./pages/Requisicoes/MinhasRequisicoes";
 import RegistoColaborador from "./pages/Management/RegistoColaborador";
 import RegistoArea from "./pages/Management/RegistoArea";
@@ -27,10 +36,9 @@ import RegistoProjecto from "./pages/Management/RegistoProjecto";
 import RequisicaoPorUS from "./pages/Requisicoes/RequiscaoPorUS";
 import RegistoPontoFocal from "./pages/Management/RegistoPontoFocal";
 
-function App () {
-
+function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const[materialRequisicao, setMaterialRequisicao] = useState();
+  const [materialRequisicao, setMaterialRequisicao] = useState();
 
   const handleLogin = (status) => {
     setIsAuthenticated(status);
@@ -41,40 +49,45 @@ function App () {
     console.log("materialRequisitcao", materialRequisicao);
   };
 
-// 👇️ conditionally redirect based on isAuthenticated boolean
-const AuthWrapper = ({isAuthenticated}) => {
-  return isAuthenticated ? (
-    <Navigate to="/"  />
-  ) : (
-    <Navigate to="/auth/login"  />
-    // {/* <Route path="/auth/login" element={<LoginIndex />}></Route> */}
-  );
-};
-
+  // 👇️ conditionally redirect based on isAuthenticated boolean
+  const AuthWrapper = ({ isAuthenticated }) => {
+    return isAuthenticated ? (
+      <Navigate to="/" />
+    ) : (
+      <Navigate to="/auth/login" />
+      // {/* <Route path="/auth/login" element={<LoginIndex />}></Route> */}
+    );
+  };
 
   return (
-
     <Routes>
-     <Route
-            path="/home"
-            element={<AuthWrapper isAuthenticated={isAuthenticated} />}
-          />
-        <Route path="/" element={<AuthLayout   />}>
-         <Route path="/" element={<Dashboard  />}></Route> 
-         <Route path="/dashboard" element={<Dashboard  />}></Route> 
-        <Route path="/materialDisponivel" element={<TableMateriaisDisponivel />}></Route>
+      <Route
+        path="/home"
+        element={<AuthWrapper isAuthenticated={isAuthenticated} />}
+      />
+      <Route path="/" element={<AuthLayout />}>
+        <Route path="/" element={<Dashboard />}></Route>
+        <Route path="/dashboard" element={<Dashboard />}></Route>
+        <Route
+          path="/materialDisponivel"
+          element={<TableMateriaisDisponivel />}
+        ></Route>
         <Route path="/importar" element={<UploadForm />}></Route>
         <Route path="/blank" element={<Blank />}></Route>
-        <Route path="/materiaisLogistica" element={<TableMateriaisLogistica />}></Route>
+        <Route
+          path="/materiaisLogistica"
+          element={<TableMateriaisLogistica />}
+        ></Route>
         {/* <Route path="/404" element={<NotFound />}> </Route> */}
         <Route path="/404" element={<UploadForm />}></Route>
         <Route path="/pedidosArea" element={<PedidosArea />}></Route>
         <Route path="/form" element={<Form />}></Route>
         <Route path="/pontoFocal" element={<RegistoPontoFocal />}></Route>
+        <Route path="/guiasEntregues" element={<ListaGuiasEntregues />}></Route>
         <Route path="/profile" element={<Blank />}></Route>
         <Route path="/requisicao" element={<NovaRequisicao />}></Route>
         <Route path="/requisicaous" element={<RequisicaoPorUS />}></Route>
-       <Route path="/novaGuia" element={<NovaGuia />}></Route> 
+        <Route path="/novaGuia" element={<NovaGuia />}></Route>
         <Route path="/listaGuias" element={<ListaGuias />}></Route>
         <Route path="/criarNovaGuia" element={<RequisicoesPendentes />}></Route>
         <Route path="/visualizarGuia" element={<VisualizarGuia />}></Route>
@@ -82,14 +95,16 @@ const AuthWrapper = ({isAuthenticated}) => {
         <Route path="/areas" element={<RegistoArea />}></Route>
         <Route path="/template" element={<TemplateDownload />}></Route>
         <Route path="/projectos" element={<RegistoProjecto />}></Route>
-        <Route path="/minhasRequisicoes" element={<MinhasRequisicoes />}></Route>
+        <Route
+          path="/minhasRequisicoes"
+          element={<MinhasRequisicoes />}
+        ></Route>
       </Route>
       <Route path="/auth" element={<GuestLayout />}>
         <Route path="/auth/login" element={<LoginIndex />}></Route>
         <Route path="/auth/register" element={<RegisterIndex />}></Route>
       </Route>
     </Routes>
-
   );
 }
 

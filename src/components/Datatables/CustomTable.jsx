@@ -14,6 +14,7 @@ import {
   updateAreaStatus,
   updateArea,
   updatePontoFocalStatus,
+  voidPontoFocal,
   updateUsuarioStatus,
 } from "../../middleware/GenericService.js";
 import { updateMaterial } from "../../middleware/MaterialService.js";
@@ -49,6 +50,9 @@ import { select } from "@nextui-org/react";
 import { Select } from "@mui/material";
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
+import { IconButton } from "@mui/material";
+import { Delete as DeleteIcon, Email as EmailIcon } from "@mui/icons-material";
+import CancelIcon from "@mui/icons-material/Cancel";
 
 export const MaterialDisponivelTable = ({ colunas, dados }) => {
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
@@ -209,9 +213,13 @@ export const MaterialDisponivelDistribuicaoUSTable = ({
   let selectedUnidadeSanitaria = unidadeSanitaria;
   let selectedMaterials = [];
 
-  let filteredPontosFocais = pontoFocal.filter(
-    (pf) => pf.unidade_sanitaria_id === selectedUnidadeSanitaria.value
-  );
+  let filteredPontosFocais = [];
+  // if ponto Focal is empty, do nothing
+  if (pontoFocal.length > 0) {
+    filteredPontosFocais = pontoFocal.filter(
+      (pf) => pf.unidade_sanitaria_id === selectedUnidadeSanitaria.value
+    );
+  }
 
   const [selectedValue, setSelectedValue] = React.useState(
     filteredPontosFocais[0]
@@ -254,7 +262,7 @@ export const MaterialDisponivelDistribuicaoUSTable = ({
         };
         return material;
       });
-    } else {
+    } /* else {
       let prefferedPontoFocal = filteredPontosFocais.filter(
         (pf) => pf.preferred === "Sim"
       );
@@ -275,10 +283,12 @@ export const MaterialDisponivelDistribuicaoUSTable = ({
         };
         return material;
       });
-    }
+    } */
 
     // update parent state
     setMateriaisRequisicao(selectedMaterials);
+
+    // unselect all rows
   };
 
   const handleExportMateriais = (rows) => {
@@ -1874,7 +1884,9 @@ export const MinhasRequisicoesTable = ({ colunas, dados, tipo }) => {
 export const RequisicoesPorAreaTable = ({ colunas, dados, areaInfo }) => {
   const [selectedRowIndex, setSelectedRowIndex] = useState(null);
   const [requisicoesSelecionadas, setRequisicoesSelecionadas] = useState([]);
+  const [requisicoes, setUpdateRequisicoes] = useState([...dados]);
 
+  const [selectedRow, setSelectedRow] = useState(null);
   let requisicao = null;
   const navigate = useNavigate();
   let requisicoesArea = dados;
@@ -1882,10 +1894,18 @@ export const RequisicoesPorAreaTable = ({ colunas, dados, areaInfo }) => {
   const handleClickOpen = () => {
     setOpen(true);
   };
+
+  const [openAnularReq, setOpenAnularReq] = React.useState(false);
+  const handleClickOpenAnularReq = () => {
+    setOpenAnularReq(true);
+  };
   const [selectedUS, setSelectedUS] = useState(null);
 
   const handleClose = () => {
     setOpen(false);
+  };
+  const handleCloseAnularReq = () => {
+    setOpenAnularReq(false);
   };
   const handleExportRows = (rows) => {
     const jsonRows = rows;
@@ -2043,11 +2063,82 @@ export const RequisicoesPorAreaTable = ({ colunas, dados, areaInfo }) => {
     }
   };
 
+  const fetchResultCancelRequisicao = async (id_requisicao) => {
+    // Send a POST request
+    const result = await cancelRequisicao(id_requisicao);
+    return result;
+  };
+
+  const handleVoidRequisicao = async () => {
+    let id_requisicao = selectedRow[0].id;
+    //  cancell requisicao
+    try {
+      const result = await fetchResultCancelRequisicao(id_requisicao);
+      if (result[0].canceled === "Yes") {
+        NotificationManager.success(
+          "Requisicao cancelada com sucesso",
+          "Sucesso",
+          5000
+        );
+        // update requisicoes array
+        handleCloseAnularReq();
+
+        const updatedRequisicoes = dados.filter(
+          (requisicao) => requisicao.id !== id_requisicao
+        );
+        setUpdateRequisicoes(updatedRequisicoes);
+        // wait 4 sec the refresh the page
+        setTimeout(() => {
+          window.location.reload();
+        }, 3000);
+      }
+    } catch (error) {
+      NotificationManager.error(
+        "Nao foi possivel cancelar a requisicao: " + error.message,
+        "Error",
+        5000
+      );
+    }
+
+    return;
+  };
+
+  const handleConfirmVoidRequisicao = (rows) => {
+    if (rows.length > 1) {
+      // Alert the user can only activate one row at a time, use NotificationManager
+      NotificationManager.info(
+        "Apenas uma linha pode ser selecionada de cada vez",
+        "Info",
+        4000
+      );
+    } else {
+      let req = null;
+      // get all properties from rows (dados) and store in an array. each row represent a requisicao.
+      const requisicao = rows.map((row) => {
+        // Get values from the selected row and create a json object
+        req = {
+          id: row.getValue("id_requisicao"),
+          data_requisicao: row.getValue("data_requisicao"),
+          material_descricao: row.getValue("material_descricao"),
+          quantidade: row.getValue("quantidade"),
+          unidade_sanitaria: row.getValue("unidade_sanitaria"),
+          pf_nome: row.getValue("pf_nome"),
+          pf_contacto: row.getValue("pf_contacto"),
+        };
+        return req;
+      });
+
+      setSelectedRow(requisicao);
+
+      handleClickOpenAnularReq();
+    }
+  };
+
   return (
     <div>
       <MaterialReactTable
         columns={colunas}
-        data={dados}
+        data={requisicoes}
         initialState={{
           columnVisibility: { id_requisicao: false, id_us: false },
           density: "compact",
@@ -2065,6 +2156,22 @@ export const RequisicoesPorAreaTable = ({ colunas, dados, areaInfo }) => {
               variant="contained"
             >
               Ciar Guia
+            </Button>
+            <Button
+              disabled={
+                table.getSelectedRowModel().rows.length === 0 ||
+                table.getSelectedRowModel().rows.length > 1
+                //|| isEnviarPedidoDisabled
+              }
+              color="secondary"
+              //export all rows, including from the next page, (still respects filtering and sorting)
+              onClick={() =>
+                handleConfirmVoidRequisicao(table.getSelectedRowModel().rows)
+              }
+              startIcon={<CancelIcon />}
+              variant="contained"
+            >
+              Cancelar
             </Button>
             <Button
               disabled={table.getPrePaginationRowModel().rows.length === 0}
@@ -2091,6 +2198,20 @@ export const RequisicoesPorAreaTable = ({ colunas, dados, areaInfo }) => {
           <DialogActions>
             <Button onClick={handleClose}>Cancel</Button>
             <Button onClick={handleConfirmCriarGuia}>Continuar</Button>
+          </DialogActions>
+        </Dialog>
+      </div>
+      <div>
+        <Dialog open={openAnularReq} onClose={handleClickOpenAnularReq}>
+          <DialogTitle> Confirmar </DialogTitle>
+          <DialogContent>
+            <DialogContentText>
+              Tem certeza que deseja anular esta requisicao?
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleClose}>Cancel</Button>
+            <Button onClick={handleVoidRequisicao}>Sim</Button>
           </DialogActions>
         </Dialog>
       </div>
@@ -3195,7 +3316,7 @@ export const ProjectosTable = ({ colunas, dados }) => {
 };
 
 // TODO highlight selected row
-export const PontosFocaisTable = ({ colunas, dados }) => {
+export const PontosFocaisTable = ({ colunas, dados, handleUpdate }) => {
   const [open, setOpen] = React.useState(false);
   let pontoFocal = null;
   let activactioStatus = null;
@@ -3209,7 +3330,11 @@ export const PontosFocaisTable = ({ colunas, dados }) => {
 
     return resultado;
   };
+  const fetchResultVoidPontoFocal = async (json) => {
+    const resultado = await voidPontoFocal(json);
 
+    return resultado;
+  };
   const handleChangePreferred = async (rows) => {
     // Check if multiple rows are selected
     if (rows.length > 1) {
@@ -3231,6 +3356,18 @@ export const PontosFocaisTable = ({ colunas, dados }) => {
         // If the user confirms, then update the user status
         // If the user cancels, then do nothing
         if (pontoFocal.preferred_status === "Sim") {
+          NotificationManager.success(
+            "Estado preferido actualizado com sucesso",
+            "Sucesso",
+            4000
+          );
+
+          // wait for 5 seconds
+          setTimeout(() => {
+            // refresh the page
+            window.location.reload();
+          }, 3000);
+        } else {
           pontoFocal.preferred_status = "Nao";
           try {
             let res = await fetchResultUpdatePontoFocalStatus(pontoFocal);
@@ -3253,31 +3390,6 @@ export const PontosFocaisTable = ({ colunas, dados }) => {
               "Erro ao actualizar o estado do Ponto Focal" + error.message,
               "Error",
               3000
-            );
-          }
-        } else {
-          pontoFocal.preferred_status = "Sim";
-          try {
-            let res = await fetchResultUpdatePontoFocalStatus(pontoFocal);
-            if (res.data === "Estado preferido actualizado com sucesso") {
-              NotificationManager.success(
-                "Estado preferido actualizado com sucesso",
-                "Sucesso",
-                3000
-              );
-
-              // wait for 5 seconds
-              setTimeout(() => {
-                // refresh the page
-                window.location.reload();
-              }, 3000);
-            }
-          } catch (error) {
-            // show the error
-            NotificationManager.error(
-              "Erro ao actualizar o estado do ponto focal" + error.message,
-              "Error",
-              4000
             );
           }
         }
@@ -3342,6 +3454,35 @@ export const PontosFocaisTable = ({ colunas, dados }) => {
 
     writeFile(workbook, fileName, { compression: true });
   };
+  const handleVoidPontoFocal = async (row) => {
+    // Get values from the selected row and create a json object
+    pontoFocal = {
+      id_ponto_focal: row.getValue("id"),
+      preferred_status: row.getValue("preferred"),
+    };
+    try {
+      let res = await fetchResultVoidPontoFocal(pontoFocal);
+      // if res contains  contains data property (an array) with at least one element then the ponto focal was removed
+      let data = res.data[0].status;
+      if (data === "removido") {
+        NotificationManager.success(
+          "Ponto focal removido com sucesso",
+          "Sucesso",
+          4000
+        );
+
+        // reload Pontos focais
+        handleUpdate();
+      }
+    } catch (error) {
+      // show the error
+      NotificationManager.error(
+        "Erro ao remover o ponto focal" + error.message,
+        "Error",
+        4000
+      );
+    }
+  };
 
   return (
     <div>
@@ -3357,22 +3498,35 @@ export const PontosFocaisTable = ({ colunas, dados }) => {
           density: "compact",
           pagination: { pageSize: 30, pageIndex: 0 },
         }}
-        enableRowSelection
         enableRowActions
+        renderRowActions={({ row, table }) => (
+          <Box sx={{ display: "flex", flexWrap: "nowrap", gap: "8px" }}>
+            <IconButton
+              color="error"
+              onClick={() => {
+                //  data.splice(row.index, 1); //assuming simple data table
+                handleVoidPontoFocal(row);
+              }}
+            >
+              <DeleteIcon />
+            </IconButton>
+          </Box>
+        )}
         enableColumnOrdering
         positionToolbarAlertBanner="bottom"
         renderTopToolbarCustomActions={({ table }) => (
           <div style={{ display: "flex", gap: "0.5rem" }}>
-            <Button
-              color="success"
-              disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+            {/* <Button
+              disabled={table.getPrePaginationRowModel().rows.length === 0}
+              //export all rows, including from the next page, (still respects filtering and sorting)
               onClick={() =>
-                handleChangePreferred(table.getSelectedRowModel().rows)
+                handleVoidPontoFocal(table.getSelectedRowModel().rows)
               }
+              startIcon={<DeleteForeverIcon />}
               variant="contained"
             >
-              Activar / Desactivar
-            </Button>
+              Remover
+            </Button> */}
             <Button
               disabled={table.getPrePaginationRowModel().rows.length === 0}
               //export all rows, including from the next page, (still respects filtering and sorting)
