@@ -2192,8 +2192,8 @@ export const RequisicoesPorAreaTable = ({ colunas, dados, areaInfo }) => {
           <DialogTitle> Confirmar </DialogTitle>
           <DialogContent>
             <DialogContentText></DialogContentText>
-            Ainda existem outros pedidos com a mesma US: {selectedUS} . Deseja
-            continuar?
+            Existem outras requisicoes para esta US: {selectedUS} . Recomenda-se
+            que agrupe todos os materiais numa unica guia. Deseja continuar?
           </DialogContent>
           <DialogActions>
             <Button onClick={handleClose}>Cancel</Button>
@@ -2210,7 +2210,7 @@ export const RequisicoesPorAreaTable = ({ colunas, dados, areaInfo }) => {
             </DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleClose}>Cancel</Button>
+            <Button onClick={handleCloseAnularReq}>Cancel</Button>
             <Button onClick={handleVoidRequisicao}>Sim</Button>
           </DialogActions>
         </Dialog>

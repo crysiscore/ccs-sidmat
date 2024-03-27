@@ -441,13 +441,13 @@ export default function RequisicaoPorUS() {
   const handleCancelRequisicao = async () => {
     // remove all requisicoes from materialRequisicao
     setMaterialRequisicao([]);
+    setIsEnviarPedidoDisabled(false);
   };
 
   const handleEnviarRequisicao = async (rows) => {
     // if there is one requisicao object with quantidade empty or  quatidade is  an integer grater than zero, then show error message
 
     // disable Enviar requisicao button
-    setIsEnviarPedidoDisabled(true);
 
     let requisicoesWithEmptyQuantidade = materialRequisicao.filter((item) => {
       return (
@@ -506,7 +506,7 @@ export default function RequisicaoPorUS() {
     updatedRequisicoesArray = updatedRequisicoesArray.map(
       ({ id_area, ...item }) => item
     );
-
+    setIsEnviarPedidoDisabled(true);
     try {
       let res = await fetchResult(updatedRequisicoesArray);
 
@@ -521,6 +521,7 @@ export default function RequisicaoPorUS() {
       setTimeout(() => {
         setSelectedUs(null);
         setMateriaisRequisicao([]);
+        setIsEnviarPedidoDisabled(false);
       }, 3000);
       //refresh the page
     } catch (error) {

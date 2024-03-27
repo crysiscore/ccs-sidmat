@@ -32,3 +32,29 @@ end; $$;
 alter function api.sp_insert_ponto_focal(varchar, varchar, bigint, bigint) owner to sidmat;
 
 grant execute on function api.sp_insert_ponto_focal(varchar, varchar, bigint, bigint) to web_anon;
+
+
+create function fn_update_stock_on_insert() returns trigger
+    language plpgsql
+as
+$$
+begin
+     IF EXISTS (SELECT * FROM material WHERE descricao = NEW.descricao AND area = NEW.area AND projecto = NEW.projecto) THEN
+        UPDATE material SET qtd_stock = OLD.qtd_stock + NEW.qtd_stock WHERE descricao = NEW.descricao AND area = NEW.area AND projecto = NEW.projecto and qtd_stock > 0;
+        SET NEW.qtd_stock = 0;
+      RETURN NEW;
+    END IF;
+
+
+
+end; $$;
+
+alter function fn_update_stock_on_insert() owner to sidmat;
+
+
+
+create trigger update_material
+    before insert
+    on material
+    for each row
+execute procedure fn_update_stock_on_insert();
