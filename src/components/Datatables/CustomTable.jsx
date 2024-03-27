@@ -2219,7 +2219,7 @@ export const RequisicoesPorAreaTable = ({ colunas, dados, areaInfo }) => {
   );
 };
 
-export const GuiasPorAreaTable = ({ colunas, dados }) => {
+export const GuiasPorAreaTable = ({ colunas, dados, role }) => {
   const navigate = useNavigate();
 
   let guiaSaida = null;
@@ -2438,7 +2438,8 @@ export const GuiasPorAreaTable = ({ colunas, dados }) => {
             // disable if no row is selected or if the selected row is already confirmed
             disabled={
               table.getSelectedRowModel().rows.length === 0 ||
-              table.getSelectedRowModel().rows[0].status === "ENTREGUE"
+              table.getSelectedRowModel().rows[0].status === "ENTREGUE" ||
+              role !== "Logistica" // only logistica can confirm delivery
             }
             onClick={() =>
               handleConfirmarEntrega(table.getSelectedRowModel().rows)

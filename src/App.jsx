@@ -84,6 +84,10 @@ function App() {
         <Route path="/form" element={<Form />}></Route>
         <Route path="/pontoFocal" element={<RegistoPontoFocal />}></Route>
         <Route path="/guiasEntregues" element={<ListaGuiasEntregues />}></Route>
+        <Route
+          path="/listaGuiasEntregues"
+          element={<ListaGuiasEntregues />}
+        ></Route>
         <Route path="/profile" element={<Blank />}></Route>
         <Route path="/requisicao" element={<NovaRequisicao />}></Route>
         <Route path="/requisicaous" element={<RequisicaoPorUS />}></Route>

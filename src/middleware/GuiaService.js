@@ -36,7 +36,7 @@ export async function listGuiasByArea(area) {
 
       allAreas = allAreas.replace(/&/g, "%26");
       const response = await api.get(
-        "/vw_guias_saida?area=in.(" + allAreas + ")"
+        "/vw_guias_saida?area=in.(" + allAreas + ")&status=eq.NOVA"
       );
       return response.data;
     } else {
@@ -50,7 +50,9 @@ export async function listGuiasByArea(area) {
         if (tempArea.includes("&")) {
           tempArea = tempArea.replace(/&/g, "%26");
         }
-        const response = await api.get("/vw_guias_saida?area=eq." + tempArea);
+        const response = await api.get(
+          "/vw_guias_saida?area=eq." + tempArea + "&status=eq.NOVA"
+        );
         return response.data;
       }
     }
@@ -75,7 +77,7 @@ export async function listGuiasEntregues(area) {
 
       allAreas = allAreas.replace(/&/g, "%26");
       const response = await api.get(
-        "/vw_guias_saida?area=in.(" + allAreas + ")"
+        "/vw_guias_saida?area=in.(" + allAreas + ")&status=eq.ENTREGUE"
       );
       return response.data;
     } else {
@@ -89,7 +91,9 @@ export async function listGuiasEntregues(area) {
         if (tempArea.includes("&")) {
           tempArea = tempArea.replace(/&/g, "%26");
         }
-        const response = await api.get("/vw_guias_saida?area=eq." + tempArea);
+        const response = await api.get(
+          "/vw_guias_saida?area=eq." + tempArea + "&status=eq.ENTREGUE"
+        );
         return response.data;
       }
     }

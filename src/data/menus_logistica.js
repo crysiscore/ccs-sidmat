@@ -133,8 +133,13 @@ const initMenuAssessor = [
     label: "Guias de Saida",
   },
   {
-    label: "Lista de Guias",
+    label: "Guias Pendentes",
     path: "/listaGuias",
+    icon: faFileAlt,
+  },
+  {
+    label: "Guias Entregues",
+    path: "/listaGuiasEntregues",
     icon: faFileAlt,
   },
 

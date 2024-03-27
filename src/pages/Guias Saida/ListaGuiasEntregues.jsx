@@ -281,6 +281,7 @@ export const ListaGuiasEntregues = (props) => {
                       dados={listaGuias.filter(
                         (guia) => guia.area === data.area
                       )}
+                      role={userRole}
                     />
                   </TabPanel>
                 ))}
