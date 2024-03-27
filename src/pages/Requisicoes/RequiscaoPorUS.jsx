@@ -1,8 +1,6 @@
 import TextField from "@mui/material/TextField";
 import React, { useState, useEffect } from "react";
-import Navbar from "../../components/Navbar/Index";
 import { useOutletContext } from "react-router-dom";
-import { MinhasRequisicoesTable } from "../../components/Datatables/CustomTable";
 import { getLocations, getPontosFocais } from "../../middleware/GenericService";
 import ClipLoader from "react-spinners/ClipLoader";
 import { NotificationManager } from "react-notifications";
@@ -11,14 +9,19 @@ import { Navigate } from "react-router-dom";
 import Autocomplete from "@mui/material/Autocomplete";
 import DashboardHeader from "../../components/Other/DashboardHeader.jsx";
 import { getMaterialDisponivel } from "../../middleware/MaterialService";
-import { getAllArmazens } from "../../middleware/GenericService";
 import { MaterialDisponivelDistribuicaoUSTable } from "../../components/Datatables/CustomTable";
 import { MaterialReactTable } from "material-react-table";
 import { useRef } from "react";
 import { Box, Button } from "@mui/material";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 import { createRequisicao } from "../../middleware/RequisicoesService";
-import { user } from "@nextui-org/react";
+import Radio from "@mui/material/Radio";
+import RadioGroup from "@mui/material/RadioGroup";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import FormControl from "@mui/material/FormControl";
+import FormLabel from "@mui/material/FormLabel";
+import { SignalCellular0Bar } from "@mui/icons-material";
 
 const avatar =
   "https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80";
@@ -126,6 +129,7 @@ export default function RequisicaoPorUS() {
   const [isLoading, setIsLoading] = useState(true);
   const [locations, setLocations] = useState();
   const [pontosFocais, setPontosFocais] = useState();
+  const [filteredPontosFocais, setFilteredPontosFocais] = useState();
   const [materialList, setData] = useState();
 
   const [requisicoes, setRequisicoes] = useState([]);
@@ -172,6 +176,36 @@ export default function RequisicaoPorUS() {
     userArea = [userArea];
     allAreas = userArea;
   }
+
+  // Handle pontos focal for the selected US
+  const [selectedPontoFocal, setValue] = React.useState([]);
+
+  const handlePontoFocalChange = (event) => {
+    let pfName = event.target.value;
+    // filter pontos focais by name
+    let pf = filteredPontosFocais.filter((item) => item.nome === pfName);
+    // set the selected ponto focal
+    setValue(pf);
+  };
+
+  // state to control Enviar pedido enable and disable
+  const [isEnviarPedidoDisabled, setIsEnviarPedidoDisabled] = useState(false);
+
+  const handleUSChange = (newValue) => {
+    setSelectedUs(newValue);
+    // new value is null skip the rest of the code
+    if (newValue != null && pontosFocais != null) {
+      let pf = pontosFocais.filter(
+        (item) => item.unidade_sanitaria_id === newValue.value
+      );
+      if (pf.length === 1) {
+        setValue(pf);
+        setFilteredPontosFocais(pf);
+      } else {
+        setFilteredPontosFocais(pf);
+      }
+    }
+  };
 
   //get Locations
   useEffect(() => {
@@ -404,9 +438,17 @@ export default function RequisicaoPorUS() {
 
     return resultado;
   };
+  const handleCancelRequisicao = async () => {
+    // remove all requisicoes from materialRequisicao
+    setMaterialRequisicao([]);
+    setIsEnviarPedidoDisabled(false);
+  };
 
   const handleEnviarRequisicao = async (rows) => {
     // if there is one requisicao object with quantidade empty or  quatidade is  an integer grater than zero, then show error message
+
+    // disable Enviar requisicao button
+
     let requisicoesWithEmptyQuantidade = materialRequisicao.filter((item) => {
       return (
         item.quantidade === "" ||
@@ -464,7 +506,7 @@ export default function RequisicaoPorUS() {
     updatedRequisicoesArray = updatedRequisicoesArray.map(
       ({ id_area, ...item }) => item
     );
-
+    setIsEnviarPedidoDisabled(true);
     try {
       let res = await fetchResult(updatedRequisicoesArray);
 
@@ -479,6 +521,7 @@ export default function RequisicaoPorUS() {
       setTimeout(() => {
         setSelectedUs(null);
         setMateriaisRequisicao([]);
+        setIsEnviarPedidoDisabled(false);
       }, 3000);
       //refresh the page
     } catch (error) {
@@ -553,7 +596,7 @@ export default function RequisicaoPorUS() {
                 groupBy={(option) => option.distrito}
                 getOptionLabel={(option) => option.unidade_sanitaria}
                 onChange={(event, newValue) => {
-                  setSelectedUs(newValue);
+                  handleUSChange(newValue);
                 }}
                 sx={{ width: 300 }}
                 renderInput={(params) => (
@@ -567,7 +610,7 @@ export default function RequisicaoPorUS() {
                 colunas={columnNames}
                 dados={[]}
                 unidadeSanitaria={selectedUs}
-                pontoFocal={pontosFocais}
+                pontoFocal={""}
                 setMateriaisRequisicao={setMateriaisRequisicao}
               />
             </div>
@@ -591,6 +634,8 @@ export default function RequisicaoPorUS() {
               Nova Requisicao de Material por US:
             </h1>
 
+            <br></br>
+
             {/* <div className="flex flex-row gap-x-4 overflow-hidden overflow-y-auto justify-between "> */}
             <div className=" gap-y-4 overflow-hidden overflow-y-auto center wrapper-requisicoes ">
               <br></br>
@@ -600,7 +645,7 @@ export default function RequisicaoPorUS() {
                 groupBy={(option) => option.distrito}
                 getOptionLabel={(option) => option.unidade_sanitaria}
                 onChange={(event, newValue) => {
-                  setSelectedUs(newValue);
+                  handleUSChange(newValue);
                 }}
                 sx={{ width: 350 }}
                 renderInput={(params) => (
@@ -611,9 +656,39 @@ export default function RequisicaoPorUS() {
                 {" "}
                 <br></br>
               </div>
+              <br></br>
 
               {selectedUs ? (
                 <div>
+                  {filteredPontosFocais.length > 1 ? (
+                    <div>
+                      <FormControl>
+                        <FormLabel id="demo-pf_radio_groupp">
+                          Pontos Focais
+                        </FormLabel>
+                        <RadioGroup
+                          row
+                          aria-labelledby="demo-pf_radio_groupp"
+                          name="pf_radio_groupp"
+                          //value={selectedPontoFocal}
+                          onChange={handlePontoFocalChange}
+                        >
+                          {filteredPontosFocais.map((pf) => (
+                            <FormControlLabel
+                              key={pf.id}
+                              value={pf.nome}
+                              control={<Radio />}
+                              label={pf.nome}
+                            />
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                    </div>
+                  ) : (
+                    ""
+                  )}
+                  <br></br>
+
                   <h1 className="text-slate-500 pb-3 text-base md:text-lg">
                     Especifique os materiais a requisitar para:{" "}
                     {selectedUs.unidade_sanitaria}
@@ -622,10 +697,11 @@ export default function RequisicaoPorUS() {
                     colunas={columnNames}
                     dados={materialList}
                     unidadeSanitaria={selectedUs}
-                    pontoFocal={pontosFocais}
+                    pontoFocal={selectedPontoFocal}
                     setMateriaisRequisicao={setMateriaisRequisicao}
                   />
                   <br></br>
+
                   <h1 className="text-slate-500 pb-3 text-base md:text-lg">
                     Especifique as quantidades a requisitar para:{" "}
                     {selectedUs.unidade_sanitaria}
@@ -653,7 +729,10 @@ export default function RequisicaoPorUS() {
                         <div style={{ display: "flex", gap: "0.5rem" }}>
                           <Button
                             disabled={
-                              table.getPrePaginationRowModel().rows.length === 0
+                              table.getPrePaginationRowModel().rows.length ===
+                                0 ||
+                              //|| isEnviarPedidoDisabled
+                              isEnviarPedidoDisabled
                             }
                             //export all rows, including from the next page, (still respects filtering and sorting)
                             onClick={() =>
@@ -665,6 +744,19 @@ export default function RequisicaoPorUS() {
                             variant="contained"
                           >
                             Enviar Pedido
+                          </Button>
+                          <Button
+                            disabled={
+                              table.getPrePaginationRowModel().rows.length === 0
+                              //|| isEnviarPedidoDisabled
+                            }
+                            color="secondary"
+                            //export all rows, including from the next page, (still respects filtering and sorting)
+                            onClick={() => handleCancelRequisicao()}
+                            startIcon={<CancelIcon />}
+                            variant="contained"
+                          >
+                            Cancelar
                           </Button>
                         </div>
                       )}

@@ -271,6 +271,21 @@ export async function updatePontoFocalStatus(pf) {
     throw error;
   }
 }
+
+export async function voidPontoFocal(pf) {
+  try {
+    let pf_id = pf.id_ponto_focal;
+    let json = { status: "removido" };
+    const response = await api.patch("/ponto_focal?id=eq." + pf_id, json, {
+      headers: { Prefer: "return=representation" },
+    });
+
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
+
 // create a function to update the status  user in the usuario table, use the stored procedure
 //sp_update_usuario_status( id_usuario integer, status varchar)
 export async function updateAreaStatus(area) {

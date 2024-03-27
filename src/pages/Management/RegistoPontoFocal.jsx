@@ -307,7 +307,7 @@ export default function RegistoPontoFocal() {
         .catch((error) => {
           // handle any error state, rejected promises, etc..
           NotificationManager.error(
-            "Houve erro ao buscar a lsita dos PF:" + error.message,
+            "Houve erro ao buscar a lista dos PF:" + error.message,
             "Erro: " + error.code,
             8000
           );
@@ -330,6 +330,22 @@ export default function RegistoPontoFocal() {
         );
       }
     }
+  };
+
+  const handleUpdatePontosFocais = () => {
+    // update pontoFocal state in order to update the table
+    getPontosFocais(userArea)
+      .then((pf) => {
+        setPontosFocais(pf);
+      })
+      .catch((error) => {
+        // handle any error state, rejected promises, etc..
+        NotificationManager.error(
+          "Houve erro ao buscar a lista dos PF:" + error.message,
+          "Erro: " + error.code,
+          8000
+        );
+      });
   };
 
   // If user is not authenticated, redirect to login
@@ -469,12 +485,16 @@ export default function RegistoPontoFocal() {
                   </Table>
                 </TableContainer>
               </ThemeProvider>
+
+              <br></br>
+              <br></br>
               <h1 className="text-slate-500 pb-3 text-base md:text-lg">
                 Lista de Pontos Focais:
               </h1>
               <PontosFocaisTable
                 colunas={columnNamesPontoFocal}
                 dados={pontosFocais}
+                handleUpdate={handleUpdatePontosFocais}
               />
             </div>
           </div>

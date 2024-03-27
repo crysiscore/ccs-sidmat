@@ -1,6 +1,4 @@
-import { faPage4,
-   faWindows ,
- } from "@fortawesome/free-brands-svg-icons";
+import { faPage4, faWindows } from "@fortawesome/free-brands-svg-icons";
 
 import {
   faTachometer,
@@ -18,7 +16,7 @@ import {
   faCirclePlus,
   faUserFriends,
   faBuilding,
-  faNotdef
+  faNotdef,
 } from "@fortawesome/free-solid-svg-icons";
 
 // Menu da Logistica
@@ -30,7 +28,7 @@ const initMenuLogistica = [
   },
   {
     //label: 'Halaman'
-    label: 'Materiais'
+    label: "Materiais",
   },
   {
     label: "Importar Material",
@@ -47,13 +45,18 @@ const initMenuLogistica = [
     path: "/pedidosArea",
     icon: faShippingFast,
   },
-  
+
   {
-    label: 'Guias de Saida'
+    label: "Guias de Saida",
   },
   {
-    label: "Lista de Guias",
+    label: "Guias Pendentes",
     path: "/listaGuias",
+    icon: faFileAlt,
+  },
+  {
+    label: "Guias Entregues",
+    path: "/guiasEntregues",
     icon: faFileAlt,
   },
   {
@@ -62,7 +65,7 @@ const initMenuLogistica = [
     icon: faCirclePlus,
   },
   {
-    label: 'Administração'
+    label: "Administração",
   },
   {
     label: "Gestão de Utilizadores",
@@ -85,7 +88,7 @@ const initMenuLogistica = [
     icon: faNoteSticky,
   },
   {
-    label: 'Relatórios'
+    label: "Relatórios",
   },
   {
     label: "Histórico de Operações",
@@ -108,7 +111,7 @@ const initMenuAssessor = [
   },
   {
     //label: 'Halaman'
-    label: 'Requisições'
+    label: "Requisições",
   },
   {
     label: "Nova ( por material)",
@@ -125,18 +128,23 @@ const initMenuAssessor = [
     path: "/minhasRequisicoes",
     icon: faShippingFast,
   },
-  
+
   {
-    label: 'Guias de Saida'
+    label: "Guias de Saida",
   },
   {
-    label: "Lista de Guias",
+    label: "Guias Pendentes",
     path: "/listaGuias",
     icon: faFileAlt,
   },
+  {
+    label: "Guias Entregues",
+    path: "/listaGuiasEntregues",
+    icon: faFileAlt,
+  },
 
-   {
-    label: 'Admninstração'
+  {
+    label: "Admninstração",
   },
   {
     label: "Gestão de Pontos Focais",
@@ -147,7 +155,7 @@ const initMenuAssessor = [
     label: "Outros",
     path: "/outros",
     icon: faNoteSticky,
-  }, 
+  },
 ];
 
-export {initMenuLogistica,initMenuAssessor } 
+export { initMenuLogistica, initMenuAssessor };

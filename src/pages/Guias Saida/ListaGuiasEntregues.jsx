@@ -15,12 +15,13 @@ import TabPanel from "@mui/lab/TabPanel";
 import { getAllRequisicoes } from "../../middleware/RequisicoesService.js";
 import { GuiasPorAreaTable } from "../../components/Datatables/CustomTable.jsx";
 import { listGuiasByArea } from "../../middleware/GuiaService.js";
+import { listGuiasEntregues } from "../../middleware/GuiaService.js";
 import { user } from "@nextui-org/react";
 
 const avatar =
   "https://images.unsplash.com/photo-1491528323818-fdd1faba62cc?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80";
 
-export const ListaGuias = (props) => {
+export const ListaGuiasEntregues = (props) => {
   const [error, setError] = useState(null);
   const [loading, setHasFinishedLoading] = useState(false);
   const [listaGuias, setListaGuias] = useState();
@@ -139,8 +140,10 @@ export const ListaGuias = (props) => {
   }
   //get all Guias de Saida
   useEffect(() => {
-    listGuiasByArea(userArea)
+    listGuiasEntregues(userArea)
       .then((guias) => {
+        // filter all guias with status Entregue
+
         setListaGuias(guias);
         setHasFinishedLoading(true);
         // count all areas and store the count  in an array
@@ -293,4 +296,4 @@ export const ListaGuias = (props) => {
   );
 };
 
-export default ListaGuias;
+export default ListaGuiasEntregues;
