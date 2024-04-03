@@ -1,0 +1,17 @@
+-- create a trigger function that prevents  duplicated requisicao being inserted in requisicao table  with same unidade_sanitaria same material and same date
+
+CREATE OR REPLACE FUNCTION prevent_duplicate_requisicao()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM requisicao WHERE unidade_sanitaria = NEW.unidade_sanitaria AND material = NEW.material AND data_requisicao::date = CURRENT_DATE    and canceled =  'No' ) THEN
+        RAISE EXCEPTION 'Duplicate requisicao';
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- create a trigger that calls the trigger function before insert
+CREATE TRIGGER prevent_duplicate_requisicao_trigger
+BEFORE INSERT ON requisicao
+FOR EACH ROW
+EXECUTE FUNCTION prevent_duplicate_requisicao();

@@ -155,6 +155,10 @@ function NovaRequisicao() {
   const [unidadesSanitarias, setUnidadesSanitarias] = useState(
     unidadesSanitariasObject
   );
+
+  // Control Enviar Pedido Button Enable/Disable
+  const [isButtonDisabled, setIsButtonDisabled] = useState(false);
+
   const [requisicoes, setRequisicoes] = useState([]);
   // este estado vai ser usado para controlar o numero de requisicoes
   const [totalQuantidadeReq, setTotalQuantidadeReq] = useState(0);
@@ -1823,6 +1827,8 @@ function NovaRequisicao() {
   };
 
   const handleEnviarRequisicao = async () => {
+    //Prevent multiple clicks
+    setIsButtonDisabled(true);
     // if there is one requisicao object with quantidade empty, then show error message
     let requisicoesWithEmptyQuantidade = requisicoes.filter((item) => {
       return item.quantidade === "" || item.quantidade === 0;
@@ -1849,6 +1855,7 @@ function NovaRequisicao() {
       ...item,
       quantidade: parseInt(quantidade),
     }));
+
     let updatedRequisicoesArray = requisicoesArray.map((requisicao) => {
       return {
         ...requisicao,
@@ -1863,27 +1870,52 @@ function NovaRequisicao() {
     try {
       let res = await fetchResult(updatedRequisicoesArray);
 
+      // get all us_nomes  separated by comma from requisicoes to show it the NotificationManager
+      let us_nomes = requisicoes.map((item) => item.us_nome).join(", ");
+      // show the notification inclunding the us_nomes
       NotificationManager.success(
-        "Foram gravados com sucesso:" + res.length + " Requisicoes",
+        "(" +
+          res.length +
+          ") Requisicoes enviadas com sucesso para as unidades sanitarias: " +
+          us_nomes,
         "Sucesso",
-        5000
+        6000
       );
+
+      setRequisicoes([]);
+      setIsButtonDisabled(false);
       //NotificationManager.success("Requisicao enviada com sucesso" , 'Sucesso', 8000);
       setLoadingRequisicao(false);
       //refresh the page
       setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+        // redirect to /materialDisponivel
+        window.location.href = "/materialDisponivel";
+      }, 5000);
       //refresh the page
     } catch (error) {
       // handle any error state, rejected promises, etc..
       setErrorSaveRequisicao(error);
-      NotificationManager.error(
-        "Houve erro ao gravar as requisicoes: " + error.message,
-        "Erro: " + error.code,
-        8000
-      );
+      // If the error is due to duplicate requisicao, then show a notification
+      if (error.response.data.message === "Duplicate requisicao") {
+        NotificationManager.error(
+          "Ja existe uma requisicao para este material na mesma unidade sanitaria e mesma data, por favor verifique as requisicoes pendentes",
+          "Erro",
+          7000
+        );
+      } else {
+        NotificationManager.error(
+          "Houve erro ao gravar as requisicoes: " + error.message,
+          "Erro: " + error.code,
+          8000
+        );
+      }
+      setRequisicoes([]);
+      setIsButtonDisabled(false);
       setLoadingRequisicao(false);
+      setTimeout(() => {
+        // redirect to /materialDisponivel
+        window.location.href = "/materialDisponivel";
+      }, 7000);
     }
   };
 
@@ -2370,7 +2402,7 @@ function NovaRequisicao() {
                         <Spinner label="Loading..." color="warning" />
                       </span>
                     ) : null}
-                    {requisicoes.length === 0 ? (
+                    {requisicoes.length === 0 || isButtonDisabled ? (
                       <span className="req-button">
                         {" "}
                         <Button disabled variant="contained" size="medium">
