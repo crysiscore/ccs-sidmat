@@ -517,21 +517,38 @@ export default function RequisicaoPorUS() {
       );
       //NotificationManager.success("Requisicao enviada com sucesso" , 'Sucesso', 8000);
       setLoadingRequisicao(false);
+      setSelectedUs(null);
+      setMateriaisRequisicao([]);
+      setIsEnviarPedidoDisabled(false);
       //refresh the page
       setTimeout(() => {
-        setSelectedUs(null);
-        setMateriaisRequisicao([]);
-        setIsEnviarPedidoDisabled(false);
-      }, 3000);
+        window.location.reload();
+      }, 5000);
       //refresh the page
     } catch (error) {
       // handle any error state, rejected promises, etc..
-      NotificationManager.error(
-        "Houve erro ao gravar as requisicoes: " + error.message,
-        "Erro: " + error.code,
-        8000
-      );
+      // If the error is due to duplicate requisicao, then show a notification
+      if (error.response.data.message === "Duplicate requisicao") {
+        NotificationManager.error(
+          "Ja existe uma requisicao para este material na mesma unidade sanitaria e mesma data, por favor verifique as requisicoes pendentes",
+          "Erro",
+          7000
+        );
+      } else {
+        NotificationManager.error(
+          "Houve erro ao gravar as requisicoes: " + error.message,
+          "Erro: " + error.code,
+          6000
+        );
+      }
+      setSelectedUs(null);
+      setMateriaisRequisicao([]);
+      setIsEnviarPedidoDisabled(false);
       setLoadingRequisicao(false);
+      //refresh the page
+      setTimeout(() => {
+        window.location.reload();
+      }, 7000);
     }
   };
 
