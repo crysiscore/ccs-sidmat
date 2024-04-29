@@ -1828,7 +1828,7 @@ function NovaRequisicao() {
 
   const handleEnviarRequisicao = async () => {
     //Prevent multiple clicks
-    setIsButtonDisabled(true);
+    // setIsButtonDisabled(true);
     // if there is one requisicao object with quantidade empty, then show error message
     let requisicoesWithEmptyQuantidade = requisicoes.filter((item) => {
       return item.quantidade === "" || item.quantidade === 0;
