@@ -16,6 +16,7 @@ import {
   updatePontoFocalStatus,
   voidPontoFocal,
   updateUsuarioStatus,
+  updateUsuario,
 } from "../../middleware/GenericService.js";
 import { updateMaterial } from "../../middleware/MaterialService.js";
 import { saveAs } from "file-saver";
@@ -682,6 +683,7 @@ export const MaterialLogisticaTable = ({ colunas, dados, areas }) => {
   } else {
     return (
       <div>
+        /
         <MaterialReactTable
           columns={colunas}
           data={dados}
@@ -723,7 +725,6 @@ export const MaterialLogisticaTable = ({ colunas, dados, areas }) => {
             </div>
           )}
         />
-
         <div>
           <Dialog open={open} onClose={handleClose}>
             <DialogTitle>
@@ -2492,13 +2493,11 @@ export const AreasProgramaticasTable = ({ colunas, dados }) => {
   };
   const fetchResultUpdateAreaStatus = async (json) => {
     const resultado = await updateAreaStatus(json);
-
     return resultado;
   };
 
   const fetchResultUpdateArea = async (json) => {
     const resultado = await updateArea(json);
-
     return resultado;
   };
   const handleEditArea = (rows) => {
@@ -2786,8 +2785,21 @@ export const AreasProgramaticasTable = ({ colunas, dados }) => {
 };
 
 // TODO highlight selected row
-export const ColaboradoresTable = ({ colunas, dados }) => {
+export const ColaboradoresTable = ({ colunas, dados, areas }) => {
   const [open, setOpen] = React.useState(false);
+  const [openEditUser, setOpenEditUser] = React.useState(false);
+  const [currentArea, setCurrentArea] = useState(null);
+  const [nomeUser, setNomeUser] = useState("");
+  const [emailUser, setEmailUser] = useState("");
+  const [contactoUser, setContactoUser] = useState("");
+  const [areaUser, setAreaUser] = useState("");
+  const [cargoUser, setCargoUser] = useState("");
+  const [roleUser, setRoleUser] = useState("");
+  const [statusUser, setStatusUser] = useState("");
+  const [idUsuario, setIdUsuario] = useState("");
+  const [userToEdit, setUserToEdit] = useState(null);
+  let areasProgramaticas = areas;
+
   let usuario = null;
   let activactioStatus = null;
   const navigate = useNavigate();
@@ -2795,6 +2807,38 @@ export const ColaboradoresTable = ({ colunas, dados }) => {
   const handleClose = () => {
     setOpen(false);
   };
+  const handleAreaChange = (event) => {
+    setCurrentArea(event.target.value);
+  };
+  const handleClickOpen = () => {
+    setOpen(true);
+  };
+
+  const handleCloseEditUser = () => {
+    setOpenEditUser(false);
+  };
+  const handleClickOpenEditUser = () => {
+    setOpenEditUser(true);
+  };
+  const handleUserNameChange = (event) => {
+    setNomeUser(event.target.value);
+  };
+  const handleUserEmailChange = (event) => {
+    setEmailUser(event.target.value);
+  };
+  const handleUserAreaChange = (event) => {
+    setAreaUser(event.target.value);
+  };
+  const handleUserCargoChange = (event) => {
+    setCargoUser(event.target.value);
+  };
+
+  const fetchResultUpdateUsuario = async (json) => {
+    const resultado = await updateUsuario(json);
+
+    return resultado;
+  };
+
   const fetchResultUpdateUserStatus = async (json) => {
     const resultado = await updateUsuarioStatus(json);
 
@@ -2876,6 +2920,109 @@ export const ColaboradoresTable = ({ colunas, dados }) => {
     }
   };
 
+  const handleEditarUtilizador = async (rows) => {
+    // Check if multiple rows are selected
+    if (rows.length > 1) {
+      // Alert the user can only activate one row at a time, use NotificationManager
+      NotificationManager.info(
+        "Apenas um utilizador pode ser selecionada de cada vez",
+        "Info",
+        4000
+      );
+    } else {
+      rows.map(async (row) => {
+        // Get values from the selected row and create a json object
+        usuario = {
+          id_usuario: row.getValue("id"),
+          email: row.getValue("email"),
+          cargo: row.getValue("funcao"),
+          area: row.getValue("area"),
+          role: row.getValue("role"),
+          nome: row.getValue("nome"),
+        };
+
+        setUserToEdit(usuario);
+        setNomeUser(usuario.nome);
+        setEmailUser(usuario.email);
+        setCurrentArea(usuario.area);
+        setCargoUser(usuario.cargo);
+        setRoleUser(usuario.role);
+        setIdUsuario(usuario.id_usuario);
+        handleClickOpenEditUser();
+      });
+    }
+  };
+
+  const handleSaveEditedUser = async () => {
+    // Get the values from the form
+    // get nome do usuario
+    const nome = document.getElementById("user-name-edit").value;
+    // get email do usuario
+    const email = document.getElementById("user-email-edit").value;
+    // get cargo do usuario
+    const cargo = document.getElementById("user-cargo-edit").value;
+    // get role do usuario
+
+    const usuarioArea = currentArea;
+    // const materialArea2 = document.getElementById("area-simple-select").value;
+
+    // Check if the values are empty
+    if (nome === "" || email === "" || !usuarioArea) {
+      NotificationManager.error("Preencha todos os campos", "Error", 4000);
+      return;
+    }
+
+    // from the areasProgramaticas array, get the id value pf the object that matches the currentArea
+
+    const areaObject = areasProgramaticas.find(
+      (area) => area.area === usuarioArea
+    );
+    const areaObjectId = areaObject.id;
+
+    // Create an new usuario object with the values
+    let newUsuario = {
+      id_usuario: idUsuario,
+      u_nome: nome,
+      u_email: email,
+      cargo: cargo,
+      id_area: areaObjectId,
+    };
+
+    // Update the new usuario
+    try {
+      let res = await fetchResultUpdateUsuario(newUsuario);
+      if (res.data === "Actualizado com sucesso") {
+        NotificationManager.success(
+          "Usuario actualizado com sucesso",
+          "Sucesso",
+          3000
+        );
+        // wait for 5 seconds the close the dialog
+        setTimeout(() => {
+          // refresh the page
+          handleCloseEditUser();
+          window.location.reload();
+        }, 3000);
+      } else {
+        NotificationManager.error(
+          "Erro ao actualizar o Usuario",
+          "Error",
+          3000
+        );
+      }
+    } catch (error) {
+      // show the error
+      NotificationManager.error(
+        "Erro ao actualizar o Usuario" + error.message,
+        "Error",
+        4000
+      );
+      handleCloseEditUser();
+    }
+
+    // Close the dialog
+    handleCloseEditUser();
+  };
   const handleExportColaboradores = (rows) => {
     const jsonRows = rows;
 
@@ -2953,6 +3100,16 @@ export const ColaboradoresTable = ({ colunas, dados }) => {
               Activar / Desactivar
             </Button>
             <Button
+              color="success"
+              disabled={table.getFilteredSelectedRowModel().rows.length === 0}
+              onClick={() =>
+                handleEditarUtilizador(table.getSelectedRowModel().rows)
+              }
+              variant="contained"
+            >
+              Editar
+            </Button>
+            <Button
               disabled={table.getPrePaginationRowModel().rows.length === 0}
               //export all rows, including from the next page, (still respects filtering and sorting)
               onClick={() =>
@@ -2987,6 +3144,64 @@ export const ColaboradoresTable = ({ colunas, dados }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <div>
+        <Dialog open={openEditUser} onClose={handleCloseEditUser}>
+          <DialogTitle> Editar Usuario: {userToEdit?.nome} </DialogTitle>
+          <DialogContent>
+            <TextField
+              margin="dense"
+              id="user-name-edit"
+              label="Nome"
+              value={nomeUser}
+              onChange={handleUserNameChange}
+              sx={{ width: 300 }}
+              variant="standard"
+            />
+            <br></br>
+            <TextField
+              margin="dense"
+              id="user-email-edit"
+              label="Email"
+              value={emailUser}
+              onChange={handleUserEmailChange}
+              sx={{ width: 300 }}
+              variant="standard"
+            />
+            <br></br>
+            <TextField
+              margin="dense"
+              id="user-cargo-edit"
+              label="Cargo"
+              value={cargoUser}
+              onChange={handleUserCargoChange}
+              sx={{ width: 300 }}
+              variant="standard"
+            />
+            <br></br>
+
+            <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+              <p>
+                Area: &nbsp; &nbsp;
+                <Select
+                  labelId="area-select-label"
+                  id="user-area-select"
+                  value={currentArea}
+                  onChange={handleAreaChange}
+                >
+                  {areasProgramaticas.map((area) => (
+                    <MenuItem value={area.area}>{area.area}</MenuItem>
+                  ))}
+                </Select>{" "}
+              </p>
+            </FormControl>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleCloseEditUser}>Cancel</Button>
+            <Button onClick={handleSaveEditedUser}>Salvar</Button>
+          </DialogActions>
+        </Dialog>
+      </div>
     </div>
   );
 };

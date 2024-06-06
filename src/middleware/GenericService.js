@@ -370,3 +370,14 @@ export async function getPontosFocais(area) {
     throw error;
   }
 }
+
+export async function updateUsuario(user) {
+  try {
+    const response = await api.post("/rpc/sp_update_user", user, {
+      headers: { Prefer: "return=representation" },
+    });
+    return response;
+  } catch (error) {
+    throw error;
+  }
+}
