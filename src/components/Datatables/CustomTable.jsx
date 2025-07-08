@@ -2220,10 +2220,11 @@ export const RequisicoesPorAreaTable = ({ colunas, dados, areaInfo }) => {
   );
 };
 
-export const GuiasPorAreaTable = ({ colunas, dados, role }) => {
+export const GuiasPorAreaTable = ({ colunas, dados, role, status }) => {
   const navigate = useNavigate();
 
   let guiaSaida = null;
+  let guiaStatus = status;
   const handleExportGuias = (rows) => {
     const jsonRows = rows;
     let guia = null;
@@ -2434,21 +2435,23 @@ export const GuiasPorAreaTable = ({ colunas, dados, role }) => {
           >
             Visualizar Guia
           </Button>
-          <Button
-            color="success"
-            // disable if no row is selected or if the selected row is already confirmed
-            disabled={
-              table.getSelectedRowModel().rows.length === 0 ||
-              table.getSelectedRowModel().rows[0].status === "ENTREGUE" ||
-              role !== "Logistica" // only logistica can confirm delivery
-            }
-            onClick={() =>
-              handleConfirmarEntrega(table.getSelectedRowModel().rows)
-            }
-            variant="contained"
-          >
-            Confirmar Entrega
-          </Button>
+          {/* only show the confirm button if the guiaStatus is pendentes and the role is Logistica */}
+          {guiaStatus === "pendentes" && role === "Logistica" ? (
+            <Button
+              color="success"
+              // disable if no row is selected or if the selected row is already confirmed
+              disabled={
+                table.getSelectedRowModel().rows.length === 0 ||
+                table.getSelectedRowModel().rows[0].status === "ENTREGUE"
+              }
+              onClick={() =>
+                handleConfirmarEntrega(table.getSelectedRowModel().rows)
+              }
+              variant="contained"
+            >
+              Confirmar Entrega
+            </Button>
+          ) : null}
           <Button
             disabled={table.getPrePaginationRowModel().rows.length === 0}
             //export all rows, including from the next page, (still respects filtering and sorting)

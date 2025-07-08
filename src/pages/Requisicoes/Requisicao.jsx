@@ -1943,9 +1943,15 @@ function NovaRequisicao() {
       );
       // only run if there is at least on filteredPontosFocais
       if (filteredPontosFocais.length > 0) {
+
+          // if there is no preferred ponto focal ( pf.preferred === "Sim") , use the first one
         let prefferedPontoFocal = filteredPontosFocais.filter(
           (pf) => pf.preferred === "Sim"
         );
+        if (prefferedPontoFocal.length === 0) {
+          prefferedPontoFocal = filteredPontosFocais;
+        }
+        
 
         let requisicaoArray = [];
         for (let i = 0; i < tempRequisicao.length; i++) {
@@ -1997,6 +2003,9 @@ function NovaRequisicao() {
         prefferedPontoFocal = filteredPontosFocais.filter(
           (pf) => pf.preferred === "Sim"
         );
+          if (prefferedPontoFocal.length === 0) {
+          prefferedPontoFocal = filteredPontosFocais;
+        }
       }
 
       let tempSeedArray = selectedRef.current;

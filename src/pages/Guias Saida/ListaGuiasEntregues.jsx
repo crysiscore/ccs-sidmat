@@ -282,6 +282,7 @@ export const ListaGuiasEntregues = (props) => {
                         (guia) => guia.area === data.area
                       )}
                       role={userRole}
+                      status={"entregues"}
                     />
                   </TabPanel>
                 ))}
